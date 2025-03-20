@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { useToast } from "@/hooks/use-toast"
-import { Play, AlertCircle } from "lucide-react"
+import { Play, AlertCircle } from "@/components/icons"
 
 interface RunButtonProps {
   executeCode: (lang: string, code: string, input: string) => Promise<any>
@@ -85,7 +85,7 @@ const RunButton = ({ executeCode, sourceCode, input, setOutput, selectedLanguage
   }
 
   return (
-    <Button onClick={handleRunCode} disabled={isLoading} className="glow-run-on-hover px-6 py-2 h-10" size="lg">
+    <Button onClick={handleRunCode} disabled={isLoading} className="glow-run-on-hover px-6 py-2 h-10" size="sm">
       {isLoading ? (
         <>
           <Spinner className="w-4 h-4 mr-2" />

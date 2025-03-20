@@ -2,7 +2,7 @@
 
 import { Suspense } from "react"
 import { Spinner } from "@/components/ui/spinner"
-import { Terminal, Code, Lightbulb, Zap } from "lucide-react"
+import { Terminal, Code, Lightbulb, Zap } from "@/components/icons"
 import Playground from "@/components/Playground/Playground"
 
 function PlaygroundLoader() {

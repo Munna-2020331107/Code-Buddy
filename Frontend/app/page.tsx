@@ -13,7 +13,7 @@ import {
   Server,
   Users,
   Lightbulb,
-} from "lucide-react"
+} from "@/components/icons"
 import "./styles/home.css"
 
 export default function Home() {

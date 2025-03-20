@@ -2,7 +2,8 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Moon, Sun, Code } from "lucide-react"
+import { Code } from "@/components/icons"
+import { Moon, Sun } from "@/components/icons"
 import { useTheme } from "@/components/theme-provider"
 import "./navbar.css"
 
@@ -16,6 +17,10 @@ export function Navbar() {
     { href: "/resources", label: "Image Code Identifier" },
     { href: "/about", label: "Learning Schedule" },
   ]
+
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark")
+  }
 
   return (
     <header className="header">
@@ -38,11 +43,7 @@ export function Navbar() {
           ))}
         </nav>
         <div className="actions">
-          <button
-            aria-label="Toggle Theme"
-            className="theme-button"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          >
+          <button aria-label="Toggle Theme" className="theme-button" onClick={toggleTheme}>
             <Sun className="sun-icon" />
             <Moon className="moon-icon" />
             <span className="sr-only">Toggle theme</span>

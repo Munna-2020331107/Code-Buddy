@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { useToast } from "@/hooks/use-toast"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Sparkles, Download, Copy } from "lucide-react"
+import { Sparkles, Download, Copy } from "@/components/icons"
 import FeedbackContainer from "./FeedbackContainer"
 
 interface AiFeedbackProps {
