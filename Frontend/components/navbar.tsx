@@ -2,9 +2,9 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Code } from "@/components/icons"
 import { Moon, Sun } from "@/components/icons"
 import { useTheme } from "@/components/theme-provider"
+import { Logo } from "@/components/logo"
 import "./navbar.css"
 
 export function Navbar() {
@@ -12,10 +12,10 @@ export function Navbar() {
   const pathname = usePathname()
 
   const routes = [
-    { href: "/services", label: "Code Execution and Error Analysis" },
-    { href: "/courses", label: "Code Collaboration" },
-    { href: "/resources", label: "Image Code Identifier" },
-    { href: "/about", label: "Learning Schedule" },
+    { href: "/code-execution-and-error-analysis", label: "Code Execution and Error Analysis" },
+    { href: "/code-collaboration", label: "Code Collaboration" },
+    { href: "/image-code-identifier", label: "Image Code Identifier" },
+    { href: "/learning-schedule", label: "Learning Schedule" },
   ]
 
   const toggleTheme = () => {
@@ -26,10 +26,7 @@ export function Navbar() {
     <header className="header">
       <div className="header-container">
         <div className="brand">
-          <Link href="/" className="brand-link">
-            <Code className="h-6 w-6 brand-icon" />
-            <span className="brand-text">Code Buddy</span>
-          </Link>
+          <Logo className="brand-link" />
         </div>
         <nav className="nav">
           {routes.map((route) => (
