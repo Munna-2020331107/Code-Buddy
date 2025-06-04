@@ -1,3 +1,21 @@
+:root {
+  --sat: env(safe-area-inset-top);
+  --sar: env(safe-area-inset-right);
+  --sab: env(safe-area-inset-bottom);
+  --sal: env(safe-area-inset-left);
+  --header-height: 4rem; /* Estimate header height */
+}
+
+.safe-area {
+  padding-top: calc(max(1rem, var(--sat)) + var(--header-height));
+  padding-right: max(1rem, var(--sar));
+  padding-bottom: max(1rem, var(--sab));
+  padding-left: max(1rem, var(--sal));
+  min-height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 /* Home page specific styles */
 .welcome-container {
   display: flex;
