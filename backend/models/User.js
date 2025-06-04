@@ -11,6 +11,10 @@ const UserSchema = new mongoose.Schema(
       enum: ["monthly", "yearly", "quarterly", "none"], 
       default: "none"
     },
+    premium_expiry_date: { 
+      type: Date,
+      default: null
+    },
     picture_url: { type: String, default: "" }, // Stores URL of profile picture
   },
   { timestamps: true } // Automatically creates createdAt & updatedAt
