@@ -1,0 +1,207 @@
+.image-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.image-upload-container {
+  border: 2px dashed hsl(var(--primary) / 0.3);
+  border-radius: 0.75rem;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  background-color: hsl(var(--primary) / 0.05);
+}
+
+.image-upload-container:hover {
+  border-color: hsl(var(--primary) / 0.5);
+  background-color: hsl(var(--primary) / 0.1);
+}
+
+.image-upload-icon {
+  width: 4rem;
+  height: 4rem;
+  margin: 0 auto 1rem;
+  color: hsl(var(--primary) / 0.7);
+}
+
+.image-preview {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background-color: hsl(var(--muted));
+}
+
+.image-preview img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.language-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background-color: hsl(var(--primary) / 0.1);
+  color: hsl(var(--primary));
+  margin-left: 0.5rem;
+}
+
+.extracted-code-container {
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background-color: #1e1e2e;
+}
+
+/* Professional cropping styles */
+.cropping-active {
+  cursor: crosshair !important;
+}
+
+.cropping-active.cropping-mode-move {
+  cursor: move !important;
+}
+
+.cropping-active.cropping-mode-resize {
+  cursor: default !important;
+}
+
+.professional-crop-box {
+  position: absolute;
+  border: 2px solid hsl(var(--primary));
+  background-color: hsl(var(--primary) / 0.05);
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.finalized-crop-box {
+  position: absolute;
+  border: 2px solid hsl(var(--primary));
+  background-color: hsl(var(--primary) / 0.1);
+  pointer-events: none;
+  z-index: 5;
+  border-style: dashed;
+}
+
+.cropping-instructions {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: hsl(var(--background) / 0.8);
+  color: hsl(var(--foreground));
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  pointer-events: none;
+  z-index: 20;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+}
+
+/* Resize handles */
+.resize-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: white;
+  border: 1px solid hsl(var(--primary));
+  border-radius: 50%;
+  pointer-events: all;
+  z-index: 15;
+}
+
+.resize-handle.top-left {
+  top: -5px;
+  left: -5px;
+  cursor: nwse-resize;
+}
+
+.resize-handle.top-right {
+  top: -5px;
+  right: -5px;
+  cursor: nesw-resize;
+}
+
+.resize-handle.bottom-left {
+  bottom: -5px;
+  left: -5px;
+  cursor: nesw-resize;
+}
+
+.resize-handle.bottom-right {
+  bottom: -5px;
+  right: -5px;
+  cursor: nwse-resize;
+}
+
+.resize-handle.top {
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: ns-resize;
+}
+
+.resize-handle.right {
+  top: 50%;
+  right: -5px;
+  transform: translateY(-50%);
+  cursor: ew-resize;
+}
+
+.resize-handle.bottom {
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: ns-resize;
+}
+
+.resize-handle.left {
+  top: 50%;
+  left: -5px;
+  transform: translateY(-50%);
+  cursor: ew-resize;
+}
+
+/* Grid overlay for better visual guidance */
+.crop-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.grid-line {
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+.grid-line.horizontal-1 {
+  width: 100%;
+  height: 1px;
+  top: 33.33%;
+}
+
+.grid-line.horizontal-2 {
+  width: 100%;
+  height: 1px;
+  top: 66.66%;
+}
+
+.grid-line.vertical-1 {
+  height: 100%;
+  width: 1px;
+  left: 33.33%;
+}
+
+.grid-line.vertical-2 {
+  height: 100%;
+  width: 1px;
+  left: 66.66%;
+}
+

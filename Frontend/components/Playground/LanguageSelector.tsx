@@ -2,7 +2,7 @@
 
 import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent } from "@/components/ui/select"
 import { CODE_SNIPPETS, LANGUAGE_VERSIONS } from "./LanguageVersions"
-import { Code, FileCode, Coffee, Hash, FileType, Database } from "lucide-react"
+import { Code, FileCode, Coffee, Hash, FileType, Database } from "@/components/icons"
 
 interface LanguageSelectorProps {
   selectedLanguage: string

@@ -13,7 +13,7 @@ import {
   Server,
   Users,
   Lightbulb,
-} from "lucide-react"
+} from "@/components/icons"
 import "./styles/home.css"
 
 export default function Home() {
@@ -93,7 +93,7 @@ export default function Home() {
       </div>
 
       <div className="services-grid">
-        <Link href="/services" className="service-link">
+        <Link href="/code-execution-and-error-analysis" className="service-link">
           <div className="service-icon">
             <Server className="h-10 w-10" />
           </div>
@@ -103,7 +103,7 @@ export default function Home() {
           <p className="service-description">Run code and get detailed error analysis with AI assistance.</p>
         </Link>
 
-        <Link href="/courses" className="service-link">
+        <Link href="/code-collaboration" className="service-link">
           <div className="service-icon">
             <BookOpen className="h-10 w-10" />
           </div>
@@ -113,7 +113,7 @@ export default function Home() {
           <p className="service-description">Work together on code projects in real-time with team members.</p>
         </Link>
 
-        <Link href="/resources" className="service-link">
+        <Link href="/image-code-identifier" className="service-link">
           <div className="service-icon">
             <Lightbulb className="h-10 w-10" />
           </div>
@@ -123,7 +123,7 @@ export default function Home() {
           <p className="service-description">Extract and analyze code from images with our AI tools.</p>
         </Link>
 
-        <Link href="/about" className="service-link">
+        <Link href="/learning-schedule" className="service-link">
           <div className="service-icon">
             <Users className="h-10 w-10" />
           </div>

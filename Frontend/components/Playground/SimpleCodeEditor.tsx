@@ -55,7 +55,12 @@ const SimpleCodeEditor = ({
   }, [selectedLanguage])
 
   return (
-    <div className={cn("h-[70vh] overflow-hidden rounded-b-lg", editorTheme === "dark" ? "bg-[#1e1e2e]" : "bg-white")}>
+    <div
+      className={cn(
+        "h-full overflow-hidden transition-colors duration-200",
+        editorTheme === "dark" ? "bg-[#1e1e2e]" : "bg-white",
+      )}
+    >
       <textarea
         ref={textareaRef}
         value={value}
@@ -72,7 +77,7 @@ const SimpleCodeEditor = ({
           lineHeight: "1.5",
           tabSize: `${tabSize}`,
         }}
-        placeholder="// Select a language and start coding"
+        placeholder={`// ${selectedLanguage} code will appear here`}
         spellCheck="false"
         autoCapitalize="off"
         autoComplete="off"
