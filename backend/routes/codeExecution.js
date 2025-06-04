@@ -2,13 +2,12 @@ const express = require("express");
 const router = express.Router();
 const CodeExecution = require("../models/CodeExecution");
 const Code = require("../models/Code");
-const { Configuration, OpenAIApi } = require("openai");
+const OpenAI = require("openai");
 const auth = require("../middleware/auth");
 
-const configuration = new Configuration({
+const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-const openai = new OpenAIApi(configuration);
 
 /**
  * @swagger
@@ -121,7 +120,7 @@ async function executeCode(executionId) {
  */
 async function analyzeCodeWithGPT(execution) {
   try {
-    const completion = await openai.createChatCompletion({
+    const completion = await openai.chat.completions.create({
       model: "gpt-4",
       messages: [
         {
@@ -139,7 +138,7 @@ async function analyzeCodeWithGPT(execution) {
       max_tokens: 1000
     });
 
-    const analysis = completion.data.choices[0].message.content;
+    const analysis = completion.choices[0].message.content;
 
     // Update execution with AI analysis
     execution.aiAnalysis = {

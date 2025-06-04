@@ -1,14 +1,13 @@
 const express = require("express");
 const router = express.Router();
 const ImageToCode = require("../models/ImageToCode");
-const { Configuration, OpenAIApi } = require("openai");
+const OpenAI = require("openai");
 const auth = require("../middleware/auth");
 const premium = require("../middleware/premium");
 
-const configuration = new Configuration({
+const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-const openai = new OpenAIApi(configuration);
 
 /**
  * @swagger
@@ -64,7 +63,7 @@ async function processImage(conversionId) {
 
     // TODO: Implement actual image processing and OCR
     // For now, we'll simulate the process with GPT
-    const completion = await openai.createChatCompletion({
+    const completion = await openai.chat.completions.create({
       model: "gpt-4-vision-preview",
       messages: [
         {
@@ -82,7 +81,7 @@ async function processImage(conversionId) {
       max_tokens: 1000
     });
 
-    const extractedCode = completion.data.choices[0].message.content;
+    const extractedCode = completion.choices[0].message.content;
 
     // Update conversion record
     conversion.originalText = extractedCode;

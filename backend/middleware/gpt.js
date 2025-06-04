@@ -1,9 +1,8 @@
-const { Configuration, OpenAIApi } = require("openai");
+const OpenAI = require("openai");
 
-const configuration = new Configuration({
+const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-const openai = new OpenAIApi(configuration);
 
 /**
  * Extract JSON from GPT response
@@ -31,7 +30,7 @@ const extractJsonFromResponse = (text) => {
  */
 const generateLearningSchedule = async (prompt, days) => {
   try {
-    const completion = await openai.createChatCompletion({
+    const completion = await openai.chat.completions.create({
       model: "gpt-4",
       messages: [
         {
@@ -73,7 +72,7 @@ const generateLearningSchedule = async (prompt, days) => {
       max_tokens: 2000
     });
 
-    const response = completion.data.choices[0].message.content;
+    const response = completion.choices[0].message.content;
     return extractJsonFromResponse(response);
   } catch (error) {
     throw new Error("Failed to generate learning schedule: " + error.message);
