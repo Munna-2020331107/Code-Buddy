@@ -17,10 +17,13 @@
 
 .header-container {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
   padding: 1rem 1.5rem;
   max-width: 1400px;
   margin: 0 auto;
+  gap: 1rem;
 }
 
 .brand {
@@ -54,7 +57,6 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-fill-color: transparent;
 }
 
 .dark .brand-text {
@@ -62,7 +64,6 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-fill-color: transparent;
 }
 
 @media (min-width: 640px) {
@@ -74,10 +75,11 @@
 .nav {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-left: 1rem;
-  margin-right: 1rem;
   flex-wrap: wrap;
+  gap: 0.5rem;
+  overflow-x: auto;
+  max-width: 100%;
+  padding: 0.5rem 0;
 }
 
 @media (min-width: 768px) {
@@ -89,6 +91,17 @@
 @media (min-width: 1024px) {
   .nav {
     gap: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .nav {
+    justify-content: flex-start;
+    overflow-x: auto;
+  }
+
+  .actions {
+    flex-shrink: 0;
   }
 }
 
@@ -148,10 +161,10 @@
 }
 
 .actions {
-  margin-left: auto;
   display: flex;
-  align-items: center;
+  flex-wrap: nowrap;
   gap: 1rem;
+  margin-left: auto;
 }
 
 .theme-button {
