@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-
+import type { JSX } from "react"
 import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -74,18 +74,10 @@ export default function ImageCodeIdentifierPage() {
 
   // Function to upload image to imgbb
   const uploadToImgbb = async (file: File): Promise<string> => {
-    // In a real implementation, you would use the IMGBB_API_KEY from .env.local
-    // For demo purposes, we'll simulate a successful upload
-
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-
-    // This would be the actual implementation:
-    /*
     const formData = new FormData()
     formData.append('image', file)
     
-    const response = await fetch(`https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMGBB_API_KEY}`, {
+    const response = await fetch('https://api.imgbb.com/1/upload?key=1ffb1fe59f5b7f45243c3423aab3a7aa', {
       method: 'POST',
       body: formData
     })
@@ -96,14 +88,6 @@ export default function ImageCodeIdentifierPage() {
     } else {
       throw new Error('Failed to upload image to imgbb')
     }
-    */
-
-    // For demo, return a placeholder URL
-    toast({
-      title: "Image uploaded",
-      description: "Image successfully uploaded to imgbb",
-    })
-    return "https://example.com/uploaded-image.jpg"
   }
 
   // Function to extract code from image using backend API
@@ -211,6 +195,10 @@ public class AreaCalculator {
   }
 
   const executeCode = async (lang: string, code: string, inp: string) => {
+    if (!(lang in LANGUAGE_VERSIONS)) {
+      throw new Error(`Unsupported language: ${lang}`);
+    }
+    const validLang = lang as keyof typeof LANGUAGE_VERSIONS;
     try {
       const response = await fetch("https://emkc.org/api/v2/piston/execute", {
         method: "POST",
@@ -218,8 +206,8 @@ public class AreaCalculator {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          language: lang,
-          version: LANGUAGE_VERSIONS[lang],
+          language: validLang,
+          version: LANGUAGE_VERSIONS[validLang],
           files: [
             {
               content: code,
@@ -266,15 +254,15 @@ public class AreaCalculator {
 
         <div className="flex flex-wrap gap-4 mt-6">
           <div className="flex items-center gap-2 bg-background/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm">
-            <ImageIcon size={18} className="text-primary" />
+            <ImageIcon width={18} height={18} className="text-primary" />
             <span className="text-sm font-medium">Image Upload</span>
           </div>
           <div className="flex items-center gap-2 bg-background/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm">
-            <FileText size={18} className="text-primary" />
+            <FileText width={18} height={18} className="text-primary" />
             <span className="text-sm font-medium">OCR Extraction</span>
           </div>
           <div className="flex items-center gap-2 bg-background/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm">
-            <Code size={18} className="text-primary" />
+            <Code width={18} height={18} className="text-primary" />
             <span className="text-sm font-medium">Multi-language Support</span>
           </div>
         </div>
@@ -328,7 +316,7 @@ public class AreaCalculator {
             <div className="bg-muted/50 p-4 border-b">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-semibold flex items-center">
-                  <ImageIcon className="h-5 w-5 mr-2 text-primary" />
+                  <ImageIcon width={18} height={18} className="h-5 w-5 mr-2 text-primary" />
                   Uploaded Image
                 </h2>
               </div>
@@ -357,7 +345,7 @@ public class AreaCalculator {
                 <div className="flex justify-between items-center mb-4">
                   <div className="flex items-center">
                     <h2 className="text-xl font-semibold flex items-center">
-                      <Code className="h-5 w-5 mr-2 text-primary" />
+                      <Code width={18} height={18} className="h-5 w-5 mr-2 text-primary" />
                       Extracted Code
                     </h2>
                   </div>
@@ -375,7 +363,7 @@ public class AreaCalculator {
                 <div className="flex justify-between items-center">
                   <TabsList className="bg-background/50">
                     <TabsTrigger value="extracted" className="data-[state=active]:bg-primary/10">
-                      <Code className="h-4 w-4 mr-2" />
+                      <Code width={18} height={18} className="h-4 w-4 mr-2" />
                       Code Editor
                     </TabsTrigger>
                   </TabsList>
@@ -407,7 +395,7 @@ public class AreaCalculator {
                   </div>
                 ) : !extractedCode ? (
                   <div className="h-[50vh] flex flex-col items-center justify-center">
-                    <FileText className="h-10 w-10 text-muted-foreground mb-4" />
+                    <FileText width={18} height={18} className="h-10 w-10 text-muted-foreground mb-4" />
                     <p className="text-muted-foreground">No code extracted yet</p>
                     <p className="text-xs text-muted-foreground mt-2">Upload an image to extract code</p>
                   </div>
@@ -468,7 +456,7 @@ public class AreaCalculator {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
         <div className="bg-card rounded-xl border p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-            <ImageIcon size={24} className="text-primary" />
+            <ImageIcon width={24} height={24} className="text-primary" />
           </div>
           <h3 className="text-xl font-semibold mb-2">Image Upload</h3>
           <p className="text-muted-foreground">
@@ -478,7 +466,7 @@ public class AreaCalculator {
 
         <div className="bg-card rounded-xl border p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-            <FileText size={24} className="text-primary" />
+            <FileText width={24} height={24} className="text-primary" />
           </div>
           <h3 className="text-xl font-semibold mb-2">OCR Text Extraction</h3>
           <p className="text-muted-foreground">
@@ -488,7 +476,7 @@ public class AreaCalculator {
 
         <div className="bg-card rounded-xl border p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-            <Code size={24} className="text-primary" />
+            <Code width={24} height={24} className="text-primary" />
           </div>
           <h3 className="text-xl font-semibold mb-2">Multi-language Support</h3>
           <p className="text-muted-foreground">
