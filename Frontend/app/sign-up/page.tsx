@@ -2,13 +2,16 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { ArrowLeft, Eye, EyeOff } from "lucide-react"
+import toast from "react-hot-toast"
 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function SignUpPage() {
+  const router = useRouter()
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -16,35 +19,40 @@ export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
 
   const handleSignUp = async () => {
     if (password !== confirmPassword) {
       setError("Passwords do not match")
+      toast.error("Passwords do not match")
       return
     }
 
+    setLoading(true)
+    setError("")
+
     try {
-      console.log("Name:", name)
-      console.log("Email:", email)
-      console.log("Password:", password)
-      
-      const response = await fetch("/api/signup", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
       })
 
       const data = await response.json()
-      console.log(data)
 
-      if (data.success) {
-        console.log("Sign-up successful!")
+      if (response.status === 201) {
+        toast.success("Account created successfully! Please sign in.")
+        router.push("/sign-in")
       } else {
-        setError("Sign-up failed. Try again.")
+        setError(data.message || "Sign-up failed. Try again.")
+        toast.error(data.message || "Sign-up failed. Try again.")
       }
     } catch (error) {
       console.error("Error during sign-up:", error)
       setError("Something went wrong. Please try again.")
+      toast.error("Something went wrong. Please try again.")
+    } finally {
+      setLoading(false)
     }
   }
 

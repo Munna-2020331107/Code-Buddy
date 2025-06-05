@@ -24,45 +24,58 @@ const openai = new OpenAI({
  *           schema:
  *             type: object
  *             required:
- *               - codeId
+ *               - language
+ *               - code
  *               - input
+ *               - output
+ *               - isError
  *             properties:
- *               codeId:
+ *               language:
  *                 type: string
- *                 description: ID of the code to execute
+ *                 description: Language of the code
+ *               code:
+ *                 type: string
+ *                 description: Code to execute
  *               input:
  *                 type: string
  *                 description: Input for the code execution
+ *               output:
+ *                 type: string
+ *                 description: Output of the code execution
+ *               isError:
+ *                 type: boolean
+ *                 description: Whether the execution resulted in an error
  */
 router.post("/", auth, async (req, res) => {
   try {
-    const { codeId, input } = req.body;
+    const { language, code, input, output, isError } = req.body;
 
-    // Get code from database
-    const code = await Code.findOne({
-      _id: codeId,
-      user: req.user.id
-    });
-
-    if (!code) {
-      return res.status(404).json({ message: "Code not found" });
+    if (!language || !code) {
+      return res.status(400).json({ message: "Language and code are required" });
     }
 
     // Create execution record
     const execution = new CodeExecution({
       user: req.user.id,
-      code: codeId,
+      language,
+      sourceCode: code,
       input,
-      status: "processing"
+      output,
+      status: isError ? "error" : "success",
+      error: isError ? {
+        message: typeof output === 'string' ? output : JSON.stringify(output),
+        type: "execution_error"
+      } : null
     });
 
     await execution.save();
 
-    // Execute code in background
-    executeCode(execution._id);
+    // Analyze code with GPT
+    await analyzeCodeWithGPT(execution);
 
     res.status(201).json(execution);
   } catch (error) {
+    console.error("Error in code execution:", error);
     res.status(500).json({ message: error.message });
   }
 });
@@ -91,10 +104,8 @@ async function executeCode(executionId) {
     execution.status = "success";
     await execution.save();
 
-    // Analyze code with GPT if there are errors
-    if (output.includes("error") || output.includes("Error")) {
-      await analyzeCodeWithGPT(execution);
-    }
+    // Always analyze code with GPT
+    await analyzeCodeWithGPT(execution);
 
     // Update code execution count
     await Code.findByIdAndUpdate(execution.code._id, {
@@ -110,6 +121,9 @@ async function executeCode(executionId) {
         type: "execution_error"
       };
       await execution.save();
+      
+      // Analyze error with GPT
+      await analyzeCodeWithGPT(execution);
     }
   }
 }
@@ -120,19 +134,30 @@ async function executeCode(executionId) {
  */
 async function analyzeCodeWithGPT(execution) {
   try {
+    const isError = execution.status === "error";
+    
     const completion = await openai.chat.completions.create({
       model: "gpt-4",
       messages: [
         {
           role: "system",
-          content: "You are a code analysis expert. Analyze the code and provide suggestions for improvement."
+          content: "You are a code analysis expert. Analyze the code and provide detailed feedback."
         },
         {
           role: "user",
-          content: `Analyze this code and its output:
-            Code: ${execution.code.code}
-            Output: ${execution.output}
-            Error: ${execution.error?.message || "No error"}`
+          content: `Analyze this code and provide feedback:
+            Language: ${execution.language}
+            Code: ${execution.sourceCode}
+            ${isError ? `Error: ${execution.error.message}` : `Output: ${execution.output}`}
+            
+            Please provide:
+            1. A brief explanation of what the code does
+            2. Analysis of the code quality and structure
+            3. Suggestions for improvement
+            ${isError ? "4. Detailed explanation of the error and how to fix it" : "4. Potential edge cases or bugs to watch out for"}
+            5. Best practices that could be applied
+            
+            Format your response in markdown.`
         }
       ],
       max_tokens: 1000
@@ -142,7 +167,7 @@ async function analyzeCodeWithGPT(execution) {
 
     // Update execution with AI analysis
     execution.aiAnalysis = {
-      errorCause: analysis,
+      errorCause: isError ? analysis : null,
       suggestions: [analysis],
       complexity: "medium" // TODO: Implement complexity analysis
     };

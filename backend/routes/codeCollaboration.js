@@ -31,11 +31,12 @@ router.post("/", auth, async (req, res) => {
       shareSettings.editPassword = crypto.createHash('sha256').update(shareSettings.editPassword).digest('hex');
     }
 
+    // Create collaboration with programmingLanguage field
     const collaboration = new CodeCollaboration({
       title,
       description,
       code,
-      language,
+      programmingLanguage: language || "javascript", // Map language to programmingLanguage
       owner: req.user.id,
       shareSettings,
       collaborators: [{
@@ -47,6 +48,7 @@ router.post("/", auth, async (req, res) => {
     await collaboration.save();
     res.status(201).json(collaboration);
   } catch (error) {
+    console.error("Error creating collaboration:", error);
     res.status(500).json({ message: error.message });
   }
 });

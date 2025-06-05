@@ -1,15 +1,24 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { Moon, Sun } from "@/components/icons"
 import { useTheme } from "@/components/theme-provider"
 import { Logo } from "@/components/logo"
+import { useEffect, useState } from "react"
+import toast from "react-hot-toast"
 import "./navbar.css"
 
 export function Navbar() {
   const { theme, setTheme } = useTheme()
   const pathname = usePathname()
+  const router = useRouter()
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  useEffect(() => {
+    const token = localStorage.getItem("token")
+    setIsLoggedIn(!!token)
+  }, [])
 
   const routes = [
     { href: "/code-execution-and-error-analysis", label: "Code Execution and Error Analysis" },
@@ -20,6 +29,13 @@ export function Navbar() {
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark")
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem("token")
+    setIsLoggedIn(false)
+    toast.success("Logged out successfully")
+    router.push("/sign-in")
   }
 
   return (
@@ -45,9 +61,15 @@ export function Navbar() {
             <Moon className="moon-icon" />
             <span className="sr-only">Toggle theme</span>
           </button>
-          <Link href="/sign-in" className="sign-in-button">
-            Sign In
-          </Link>
+          {isLoggedIn ? (
+            <button onClick={handleLogout} className="sign-in-button">
+              Sign Out
+            </button>
+          ) : (
+            <Link href="/sign-in" className="sign-in-button">
+              Sign In
+            </Link>
+          )}
         </div>
       </div>
     </header>

@@ -1,43 +1,56 @@
 const mongoose = require("mongoose");
 
-const CodeExecutionSchema = new mongoose.Schema(
+const codeExecutionSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true
+      required: true,
     },
-    code: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Code",
-      required: true
+    language: {
+      type: String,
+      required: true,
+    },
+    sourceCode: {
+      type: String,
+      required: true,
     },
     input: {
-      type: String
+      type: String,
+      default: "",
     },
     output: {
-      type: String
-    },
-    error: {
-      message: String,
-      stack: String,
-      type: String
-    },
-    executionTime: {
-      type: Number // in milliseconds
+      type: String,
+      default: "",
     },
     status: {
       type: String,
-      enum: ["success", "error", "timeout"],
-      required: true
+      enum: ["success", "error", "processing"],
+      default: "processing",
+    },
+    error: {
+      message: {
+        type: String,
+        default: "",
+      },
+      type: {
+        type: String,
+        default: "execution_error",
+      },
+    },
+    executionTime: {
+      type: Number,
+      default: 0,
     },
     aiAnalysis: {
       errorCause: String,
       suggestions: [String],
-      complexity: String
-    }
+      complexity: String,
+    },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
-module.exports = mongoose.model("CodeExecution", CodeExecutionSchema); 
+module.exports = mongoose.model("CodeExecution", codeExecutionSchema); 

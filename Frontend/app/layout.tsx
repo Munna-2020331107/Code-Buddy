@@ -2,6 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
+import { Toaster } from "react-hot-toast"
 
 import { ThemeProvider } from "@/components/theme-provider"
 import { Navbar } from "@/components/navbar"
@@ -11,7 +12,7 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "Code Buddy",
   description: "Your coding companion for learning and development",
-    generator: 'v0.dev'
+  generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -28,6 +29,16 @@ export default function RootLayout({
             <div className="flex-1">{children}</div>
           </div>
         </ThemeProvider>
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            duration: 3000,
+            style: {
+              background: '#333',
+              color: '#fff',
+            },
+          }}
+        />
       </body>
     </html>
   )

@@ -15,28 +15,9 @@ const CodeCollaborationSchema = new mongoose.Schema(
       type: String,
       required: true
     },
-    language: {
+    programmingLanguage: {
       type: String,
-      required: true,
-      enum: [
-        "javascript",
-        "python",
-        "java",
-        "c++",
-        "c#",
-        "php",
-        "ruby",
-        "swift",
-        "kotlin",
-        "go",
-        "rust",
-        "typescript",
-        "html",
-        "css",
-        "sql",
-        "shell",
-        "other"
-      ]
+      required: true
     },
     owner: {
       type: mongoose.Schema.Types.ObjectId,
