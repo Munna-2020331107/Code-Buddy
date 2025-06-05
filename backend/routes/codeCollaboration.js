@@ -3,6 +3,7 @@ const router = express.Router();
 const CodeCollaboration = require("../models/CodeCollaboration");
 const auth = require("../middleware/auth");
 const crypto = require("crypto");
+const User = require("../models/User");
 
 /**
  * @swagger
@@ -204,7 +205,28 @@ router.delete("/:id", auth, async (req, res) => {
  */
 router.post("/:id/collaborators", auth, async (req, res) => {
   try {
-    const { userId, role } = req.body;
+    const { email, role } = req.body;
+    console.log("=== Add Collaborator Debug ===");
+    console.log("1. Request Data:", {
+      email,
+      role,
+      workspaceId: req.params.id,
+      ownerId: req.user.id,
+      timestamp: new Date().toISOString()
+    });
+
+    // First find the user by email
+    const user = await User.findOne({ email });
+    if (!user) {
+      console.log("2. User not found:", { email });
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    console.log("2. Found User:", {
+      userId: user._id,
+      email: user.email,
+      name: user.name
+    });
 
     const collaboration = await CodeCollaboration.findOne({
       _id: req.params.id,
@@ -212,26 +234,49 @@ router.post("/:id/collaborators", auth, async (req, res) => {
     });
 
     if (!collaboration) {
+      console.log("3. Collaboration not found:", {
+        workspaceId: req.params.id,
+        ownerId: req.user.id
+      });
       return res.status(404).json({ message: "Collaboration not found" });
     }
 
+    console.log("3. Found Collaboration:", {
+      workspaceId: collaboration._id,
+      title: collaboration.title,
+      totalCollaborators: collaboration.collaborators.length
+    });
+
     // Check if user is already a collaborator
     const existingCollaborator = collaboration.collaborators.find(
-      c => c.user.toString() === userId
+      c => c.user && c.user.toString() === user._id.toString()
     );
 
     if (existingCollaborator) {
+      console.log("4. User already collaborator:", {
+        userId: user._id,
+        currentRole: existingCollaborator.role
+      });
       return res.status(400).json({ message: "User is already a collaborator" });
     }
 
     collaboration.collaborators.push({
-      user: userId,
-      role: role || 'viewer'
+      user: user._id,
+      role: role || 'viewer',
+      joinedAt: new Date()
     });
 
     await collaboration.save();
+    
+    console.log("4. Added Collaborator:", {
+      userId: user._id,
+      role: role || 'viewer',
+      totalCollaborators: collaboration.collaborators.length
+    });
+
     res.json(collaboration);
   } catch (error) {
+    console.error("5. Error adding collaborator:", error);
     res.status(500).json({ message: error.message });
   }
 });

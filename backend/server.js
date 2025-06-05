@@ -46,47 +46,75 @@ app.use("/api/code-collaboration", codeCollaborationRoutes);
 io.use((socket, next) => {
   const token = socket.handshake.auth.token;
   if (!token) {
-    return next(new Error('Authentication error'));
+    console.error('Authentication error: No token provided');
+    return next(new Error('Authentication error: No token provided'));
   }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (!decoded || !decoded.id) {
+      console.error('Authentication error: Invalid token payload');
+      return next(new Error('Authentication error: Invalid token payload'));
+    }
     socket.user = decoded;
+    console.log('Socket authenticated:', {
+      userId: socket.user.id,
+      socketId: socket.id
+    });
     next();
   } catch (err) {
-    next(new Error('Authentication error'));
+    console.error('Authentication error:', err.message);
+    next(new Error('Authentication error: ' + err.message));
   }
 });
 
 // WebSocket connection handling
 io.on('connection', (socket) => {
-  console.log('User connected:', socket.user.id);
+  console.log('User connected:', {
+    userId: socket.user?.id,
+    socketId: socket.id,
+    timestamp: new Date().toISOString()
+  });
 
   // Join a collaboration room
   socket.on('join-collaboration', async (collaborationId) => {
     try {
+      if (!socket.user || !socket.user.id) {
+        throw new Error('User not authenticated');
+      }
+
+      console.log('User joining collaboration:', {
+        userId: socket.user.id,
+        collaborationId,
+        socketId: socket.id,
+        timestamp: new Date().toISOString()
+      });
+
       const CodeCollaboration = require('./models/CodeCollaboration');
       const collaboration = await CodeCollaboration.findById(collaborationId);
 
       if (!collaboration) {
-        socket.emit('error', 'Collaboration not found');
-        return;
+        throw new Error('Collaboration not found');
       }
 
       // Check permissions
       const isOwner = collaboration.owner.toString() === socket.user.id;
       const isCollaborator = collaboration.collaborators.some(
-        c => c.user.toString() === socket.user.id
+        c => c.user && c.user.toString() === socket.user.id
       );
       const isPublic = collaboration.shareSettings.isPublic;
 
       if (!isOwner && !isCollaborator && !isPublic) {
-        socket.emit('error', 'Not authorized');
-        return;
+        throw new Error('Not authorized to join this collaboration');
       }
 
       // Join room
-      socket.join(collaborationId);
+      await socket.join(collaborationId);
+      console.log('User joined room:', {
+        userId: socket.user.id,
+        collaborationId,
+        socketId: socket.id
+      });
 
       // Add user to active users
       collaboration.activeUsers.push({
@@ -99,16 +127,20 @@ io.on('connection', (socket) => {
       // Notify others
       socket.to(collaborationId).emit('user-joined', {
         userId: socket.user.id,
-        username: socket.user.name
+        username: socket.user.name,
+        timestamp: new Date().toISOString()
       });
 
       // Send current code and active users to the new user
       socket.emit('sync-code', {
         code: collaboration.code,
         version: collaboration.version,
-        activeUsers: collaboration.activeUsers
+        activeUsers: collaboration.activeUsers,
+        timestamp: new Date().toISOString()
       });
+
     } catch (error) {
+      console.error('Error in join-collaboration:', error);
       socket.emit('error', error.message);
     }
   });
@@ -116,25 +148,68 @@ io.on('connection', (socket) => {
   // Handle code changes
   socket.on('code-change', async (data) => {
     try {
+      if (!socket.user || !socket.user.id) {
+        throw new Error('User not authenticated');
+      }
+
       const { collaborationId, changes, version } = data;
+      console.log('Received code change:', {
+        userId: socket.user.id,
+        changes,
+        collaborationId,
+        version,
+        timestamp: new Date().toISOString()
+      });
+
       const CodeCollaboration = require('./models/CodeCollaboration');
       const collaboration = await CodeCollaboration.findById(collaborationId);
 
       if (!collaboration) {
-        socket.emit('error', 'Collaboration not found');
-        return;
+        throw new Error('Collaboration not found');
       }
 
       // Check if user has edit permission
-      const isOwner = collaboration.owner.toString() === socket.user.id;
+      console.log("=== Authorization Debug ===");
+      console.log("1. Current User:", {
+        socketUserId: socket.user.id,
+        timestamp: new Date().toISOString()
+      });
+
+      console.log("2. Workspace Details:", {
+        workspaceId: collaboration._id,
+        ownerId: collaboration.owner ? collaboration.owner.toString() : 'undefined',
+        totalCollaborators: collaboration.collaborators.length
+      });
+
+      console.log("3. Collaborators List:", collaboration.collaborators.map(c => ({
+        userId: c.user ? c.user.toString() : 'undefined',
+        role: c.role,
+        joinedAt: c.joinedAt
+      })));
+
+      const isOwner = collaboration.owner && collaboration.owner.toString() === socket.user.id;
       const isEditor = collaboration.collaborators.some(
-        c => c.user.toString() === socket.user.id && c.role === 'editor'
+        c => c.user && c.user.toString() === socket.user.id && c.role === 'editor'
       );
 
+      console.log("4. Permission Check:", {
+        isOwner,
+        isEditor,
+        hasEditPermission: isOwner || isEditor
+      });
+
       if (!isOwner && !isEditor) {
-        socket.emit('error', 'Not authorized to edit');
-        return;
+        console.log("5. Access Denied:", {
+          reason: "User is neither owner nor editor",
+          userId: socket.user.id
+        });
+        throw new Error('Not authorized to edit');
       }
+
+      console.log("5. Access Granted:", {
+        userId: socket.user.id,
+        reason: isOwner ? "User is owner" : "User is editor"
+      });
 
       // Apply changes
       collaboration.code = changes;
@@ -153,13 +228,33 @@ io.on('connection', (socket) => {
 
       await collaboration.save();
 
-      // Broadcast changes to other users
-      socket.to(collaborationId).emit('code-update', {
+      // Broadcast to ALL users in the room (including sender)
+      const updateData = {
+        collaborationId,
         changes,
         version: collaboration.version,
-        editedBy: socket.user.id
+        editedBy: socket.user.id,
+        timestamp: new Date().toISOString()
+      };
+
+      console.log('Broadcasting code update:', {
+        ...updateData,
+        room: collaborationId,
+        totalUsers: io.sockets.adapter.rooms.get(collaborationId)?.size || 0
       });
+
+      // Use io.in instead of socket.emit to broadcast to all clients
+      io.in(collaborationId).emit('code-update', updateData);
+
+      // Send acknowledgment to the sender
+      socket.emit('code-update-ack', {
+        success: true,
+        version: collaboration.version,
+        timestamp: new Date().toISOString()
+      });
+
     } catch (error) {
+      console.error('Error in code-change:', error);
       socket.emit('error', error.message);
     }
   });

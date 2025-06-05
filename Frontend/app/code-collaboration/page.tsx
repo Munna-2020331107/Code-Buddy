@@ -49,6 +49,32 @@ interface WebSocketMessage {
   userName?: string
 }
 
+interface ButtonProps {
+  children: React.ReactNode;
+  variant?: 'primary' | 'secondary' | 'danger' | 'outline' | 'ghost';
+  onClick?: () => void;
+}
+
+const Button: React.FC<ButtonProps> = ({ children, variant = 'primary', onClick }) => {
+  const baseStyles = "px-4 py-2 rounded-md font-medium transition-colors";
+  const variantStyles = {
+    primary: "bg-blue-600 text-white hover:bg-blue-700",
+    secondary: "bg-gray-200 text-gray-800 hover:bg-gray-300",
+    danger: "bg-red-600 text-white hover:bg-red-700",
+    outline: "border-2 border-blue-600 text-blue-600 hover:bg-blue-50",
+    ghost: "text-blue-600 hover:bg-blue-50"
+  };
+
+  return (
+    <button
+      className={`${baseStyles} ${variantStyles[variant]}`}
+      onClick={onClick}
+    >
+      {children}
+    </button>
+  );
+};
+
 const languages = [
   "javascript",
   "python",
@@ -99,81 +125,258 @@ export default function CodeCollaborationPage() {
   }, [])
 
   const setupWebSocket = () => {
-    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "http://localhost:3000"
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "http://localhost:5000"
     const token = localStorage.getItem("token")
+    
+    if (!token) {
+      console.error("No authentication token found")
+      toast.error("Please login to continue")
+      return
+    }
+
+    console.log("Setting up socket connection:", {
+      wsUrl,
+      hasToken: !!token,
+      timestamp: new Date().toISOString()
+    })
+
     const newSocket: Socket = io(wsUrl, {
       auth: { token },
       transports: ["websocket"],
       path: "/socket.io",
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000
     })
 
     newSocket.on("connect", () => {
-      console.log("Socket.io connected")
-      const currentUser = {
-        id: localStorage.getItem("userId"),
-        name: localStorage.getItem("userName")
-      }
-      if (currentUser.id && currentUser.name) {
-        setActiveUsers([currentUser])
+      console.log("Socket connected:", {
+        socketId: newSocket.id,
+        timestamp: new Date().toISOString()
+      })
+
+      const userId = localStorage.getItem("userId");
+      const userName = localStorage.getItem("userName");
+
+      if (userId && userName) {
+        const currentUser: User = {
+          id: userId,
+          name: userName
+        };
+        setActiveUsers([currentUser]);
       }
     })
 
     newSocket.on("connect_error", (err) => {
+      console.error("Socket connection error:", {
+        error: err.message,
+        timestamp: new Date().toISOString()
+      })
       toast.error("Connection error. Please refresh the page.")
-      console.error("Socket.io error:", err)
     })
 
-    newSocket.on("sync-code", (data: any) => {
-      console.log("Sync code received:", data)
-      if (selectedWorkspace && selectedWorkspace._id === data.collaborationId) {
-        setSelectedWorkspace(prev => prev ? {
-          ...prev,
-          code: data.code,
-          version: data.version
-        } : null)
+    newSocket.on("error", (error) => {
+      console.error("Socket error:", {
+        error: error.message,
+        timestamp: new Date().toISOString()
+      })
+      toast.error(error.message || "An error occurred")
+    })
+
+    newSocket.on("disconnect", (reason) => {
+      console.log("Socket disconnected:", {
+        reason,
+        timestamp: new Date().toISOString()
+      })
+      if (reason === "io server disconnect") {
+        // Server initiated disconnect, try to reconnect
+        newSocket.connect()
       }
     })
 
     newSocket.on("code-update", (data: any) => {
-      console.log("Code update received:", data)
-      if (selectedWorkspace && selectedWorkspace._id === data.collaborationId) {
-        setSelectedWorkspace(prev => prev ? {
-          ...prev,
-          code: data.changes,
-          version: data.version,
-          lastEdited: {
-            by: data.editedBy,
-            at: new Date().toISOString()
+      console.log("=== Code Update Debug ===");
+      console.log("1. Received Update:", {
+        data,
+        timestamp: new Date().toISOString(),
+        currentWorkspaceId: localStorage.getItem("currentWorkspaceId"),
+        updateWorkspaceId: data.collaborationId,
+        socketId: newSocket.id,
+        isOwner: selectedWorkspace?.owner === localStorage.getItem("userId")
+      });
+      
+      // Check if this update is for our current workspace
+      const currentWorkspaceId = localStorage.getItem("currentWorkspaceId");
+      if (currentWorkspaceId === data.collaborationId) {
+        console.log("2. Current State:", {
+          oldCode: selectedWorkspace?.code,
+          oldVersion: selectedWorkspace?.version,
+          newCode: data.changes,
+          newVersion: data.version,
+          editedBy: data.editedBy,
+          isOwner: selectedWorkspace?.owner === localStorage.getItem("userId")
+        });
+        
+        // Update workspaces list first
+        setWorkspaces(prevWorkspaces => {
+          return prevWorkspaces.map(workspace => {
+            if (workspace._id === data.collaborationId) {
+              return {
+                ...workspace,
+                code: data.changes,
+                version: data.version,
+                lastEdited: {
+                  by: data.editedBy,
+                  at: data.timestamp || new Date().toISOString()
+                }
+              };
+            }
+            return workspace;
+          });
+        });
+        
+        // Then update selected workspace
+        setSelectedWorkspace(prev => {
+          if (!prev) {
+            console.warn("No previous workspace state found");
+            return null;
           }
-        } : null)
+
+          const updated = {
+            ...prev,
+            code: data.changes,
+            version: data.version,
+            lastEdited: {
+              by: data.editedBy,
+              at: data.timestamp || new Date().toISOString()
+            }
+          };
+
+          console.log("3. New State:", {
+            code: updated.code,
+            version: updated.version,
+            lastEdited: updated.lastEdited,
+            isOwner: updated.owner === localStorage.getItem("userId")
+          });
+
+          return updated;
+        });
+      } else {
+        console.warn("Update ignored:", {
+          reason: "Workspace ID mismatch",
+          currentWorkspaceId,
+          updateWorkspaceId: data.collaborationId
+        });
+      }
+    });
+
+    newSocket.on("code-update-ack", (data: any) => {
+      console.log("=== Code Update Acknowledgment ===");
+      console.log("1. Received Ack:", {
+        data,
+        timestamp: new Date().toISOString(),
+        socketId: newSocket.id
+      });
+    });
+
+    newSocket.on("sync-code", (data: any) => {
+      console.log("=== Sync Code Debug ===");
+      console.log("1. Received Sync:", {
+        data,
+        timestamp: new Date().toISOString()
+      });
+      
+      if (selectedWorkspace) {
+        console.log("2. Current State:", {
+          workspaceId: selectedWorkspace._id,
+          currentCode: selectedWorkspace.code,
+          currentVersion: selectedWorkspace.version
+        });
+
+        setSelectedWorkspace(prev => {
+          if (!prev) {
+            console.warn("No previous workspace state found");
+            return null;
+          }
+
+          const updated = {
+            ...prev,
+            code: data.code,
+            version: data.version
+          };
+
+          console.log("3. New State:", {
+            code: updated.code,
+            version: updated.version
+          });
+
+          return updated;
+        });
+      } else {
+        console.warn("Sync ignored: No selected workspace");
       }
     })
 
     newSocket.on("user-joined", (data: any) => {
-      console.log("User joined:", data)
-      setActiveUsers(prev => [...prev, { id: data.userId, name: data.username }])
-      toast.success(`${data.username} joined the workspace`)
+      console.log("User joined:", {
+        data,
+        timestamp: new Date().toISOString()
+      });
+      setActiveUsers(prev => [...prev, { id: data.userId, name: data.username }]);
+      toast.success(`${data.username} joined the workspace`);
     })
 
     newSocket.on("user-left", (data: any) => {
-      console.log("User left:", data)
-      setActiveUsers(prev => prev.filter(user => user.id !== data.userId))
+      console.log("User left:", {
+        data,
+        timestamp: new Date().toISOString()
+      });
+      setActiveUsers(prev => prev.filter(user => user.id !== data.userId));
       if (data.username) {
-        toast(`${data.username} left the workspace`)
+        toast(`${data.username} left the workspace`);
       }
     })
 
     setSocket(newSocket)
+
+    return () => {
+      console.log("Cleaning up socket connection");
+      newSocket.disconnect();
+    }
   }
 
   const handleCodeChange = (newCode: string) => {
     if (socket && selectedWorkspace) {
-      console.log("Sending code update:", newCode)
-      socket.emit("code-change", {
+      const updateData = {
         collaborationId: selectedWorkspace._id,
         changes: newCode,
-        version: selectedWorkspace.version || 1
-      })
+        version: selectedWorkspace.version || 1,
+        timestamp: new Date().toISOString(),
+        editedBy: localStorage.getItem("userId")
+      };
+
+      console.log("=== Code Change Debug ===");
+      console.log("1. Current State:", {
+        workspaceId: selectedWorkspace._id,
+        currentVersion: selectedWorkspace.version,
+        currentCode: selectedWorkspace.code,
+        socketConnected: socket.connected,
+        socketId: socket.id,
+        isOwner: selectedWorkspace.owner === localStorage.getItem("userId")
+      });
+
+      console.log("2. Sending Update:", updateData);
+      
+      socket.emit("code-change", updateData);
+    } else {
+      console.warn("Cannot send code update:", {
+        hasSocket: !!socket,
+        hasWorkspace: !!selectedWorkspace,
+        socketState: socket ? {
+          connected: socket.connected,
+          id: socket.id
+        } : null
+      });
     }
   }
 
@@ -299,10 +502,21 @@ export default function CodeCollaborationPage() {
 
   const joinWorkspace = async (workspaceId: string) => {
     try {
+      const token = localStorage.getItem("token")
+      if (!token) {
+        toast.error("Please login to continue")
+        return
+      }
+
+      console.log("Joining workspace:", {
+        workspaceId,
+        timestamp: new Date().toISOString()
+      })
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/code-collaboration/${workspaceId}`, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
       })
 
@@ -311,13 +525,23 @@ export default function CodeCollaborationPage() {
       }
 
       const data = await response.json()
+      console.log("Workspace data:", data)
+      
+      // Save workspace ID to localStorage
+      localStorage.setItem("currentWorkspaceId", workspaceId)
       setSelectedWorkspace(data)
+
       if (socket) {
-        console.log("Joining workspace:", data._id)
-        socket.emit("join-collaboration", data._id)
+        console.log("Emitting join-collaboration:", {
+          workspaceId,
+          socketId: socket.id,
+          timestamp: new Date().toISOString()
+        })
+        socket.emit("join-collaboration", workspaceId)
       }
     } catch (error) {
       if (error instanceof Error) {
+        console.error("Error joining workspace:", error)
         toast.error(error.message)
       } else {
         toast.error("Failed to join workspace")
@@ -332,6 +556,19 @@ export default function CodeCollaborationPage() {
     return workspace.owner === userId || 
       workspace.collaborators?.some(c => c.user === userId && c.role === "editor");
   }
+
+  useEffect(() => {
+    const cleanup = setupWebSocket();
+    return () => {
+      if (cleanup) cleanup();
+    };
+  }, []);
+
+  // Clean up localStorage when leaving workspace
+  const handleBackToWorkspaces = () => {
+    localStorage.removeItem("currentWorkspaceId");
+    setSelectedWorkspace(null);
+  };
 
   return (
     <div className="container py-8 px-4 md:px-6">
@@ -378,12 +615,15 @@ export default function CodeCollaborationPage() {
                     Join
                   </Button>
                 )}
-                <Button variant="ghost" onClick={() => {
-                  setSelectedWorkspace(workspace);
-                  setIsShareDialogOpen(true);
-                }}>
-                  <Share2 className="h-4 w-4" />
-                </Button>
+                { (
+                  <Button variant="ghost" onClick={() => {
+                    setIsShareDialogOpen(true);
+                    setEmail("");
+                    setRole("viewer");
+                  }}>
+                    <Share2 className="h-4 w-4" />
+                  </Button>
+                )}
               </CardFooter>
             </Card>
           ))}
@@ -406,7 +646,7 @@ export default function CodeCollaborationPage() {
                   Share
                 </Button>
               )}
-              <Button variant="outline" onClick={() => setSelectedWorkspace(null)}>
+              <Button variant="outline" onClick={handleBackToWorkspaces}>
                 Back to Workspaces
               </Button>
             </div>
@@ -539,7 +779,13 @@ export default function CodeCollaborationPage() {
             <Button variant="outline" onClick={() => setIsShareDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={() => selectedWorkspace?._id && shareWorkspace(selectedWorkspace._id, email, role)}>
+            <Button onClick={() => {
+              const workspaceId = selectedWorkspace?._id;
+              if (workspaceId) {
+                shareWorkspace(workspaceId, email, role);
+                setIsShareDialogOpen(false);
+              }
+            }}>
               Share
             </Button>
           </DialogFooter>
