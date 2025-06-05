@@ -520,7 +520,7 @@ public class AreaCalculator {
         },
         body: JSON.stringify({
           language: lang,
-          version: LANGUAGE_VERSIONS[lang],
+          version: LANGUAGE_VERSIONS[lang as keyof typeof LANGUAGE_VERSIONS],
           files: [
             {
               content: code,
@@ -599,19 +599,19 @@ public class AreaCalculator {
 
         <div className="flex flex-wrap gap-4 mt-6">
           <div className="flex items-center gap-2 bg-background/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm">
-            <ImageIcon size={18} className="text-primary" />
+            <ImageIcon width={18} height={18} className="text-primary" />
             <span className="text-sm font-medium">Image Upload</span>
           </div>
           <div className="flex items-center gap-2 bg-background/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm">
-            <Crop size={18} className="text-primary" />
+            <Crop width={18} height={18} className="text-primary" />
             <span className="text-sm font-medium">Professional Cropping</span>
           </div>
           <div className="flex items-center gap-2 bg-background/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm">
-            <FileText size={18} className="text-primary" />
+            <FileText width={18} height={18} className="text-primary" />
             <span className="text-sm font-medium">OCR Extraction</span>
           </div>
           <div className="flex items-center gap-2 bg-background/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm">
-            <Code size={18} className="text-primary" />
+            <Code width={18} height={18} className="text-primary" />
             <span className="text-sm font-medium">Multi-language Support</span>
           </div>
         </div>
@@ -638,7 +638,7 @@ public class AreaCalculator {
         <div className="bg-card rounded-xl border shadow-lg p-12 text-center">
           <div className="flex flex-col items-center justify-center gap-4">
             <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-              <ImageIcon className="h-10 w-10 text-primary" />
+              <ImageIcon width={24} height={24} className="text-primary" />
             </div>
             <h2 className="text-2xl font-semibold">No Image Selected</h2>
             <p className="text-muted-foreground max-w-md">
@@ -658,7 +658,7 @@ public class AreaCalculator {
             <div className="bg-muted/50 p-4 border-b">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold flex items-center">
-                  <ImageIcon className="h-5 w-5 mr-2 text-primary" />
+                  <ImageIcon width={24} height={24} className="h-5 w-5 mr-2 text-primary" />
                   Original Image
                 </h2>
 
@@ -688,7 +688,7 @@ public class AreaCalculator {
                       className="flex items-center gap-1"
                       disabled={isExtracting}
                     >
-                      <Crop className="h-4 w-4 mr-1" />
+                      <Crop width={24} height={24} className="h-4 w-4 mr-1" />
                       {croppedImage ? "Crop Again" : "Manual Crop"}
                     </Button>
                     <Button
@@ -714,7 +714,7 @@ public class AreaCalculator {
                     className="h-8 px-2"
                     onClick={() => changeCropMode("draw")}
                   >
-                    <Crop className="h-4 w-4 mr-1" />
+                    <Crop width={24} height={24} className="h-4 w-4 mr-1" />
                     Draw
                   </Button>
                   <Button
@@ -832,7 +832,7 @@ public class AreaCalculator {
                 <div className="flex justify-between items-center mb-4">
                   <div className="flex items-center">
                     <h2 className="text-xl font-semibold flex items-center">
-                      <Code className="h-5 w-5 mr-2 text-primary" />
+                      <Code width={24} height={24} className="h-5 w-5 mr-2 text-primary" />
                       Extracted Code
                     </h2>
                   </div>
@@ -850,11 +850,11 @@ public class AreaCalculator {
                 <div className="flex justify-between items-center">
                   <TabsList className="bg-background/50">
                     <TabsTrigger value="extracted" className="data-[state=active]:bg-primary/10">
-                      <Code className="h-4 w-4 mr-2" />
+                      <Code width={24} height={24} className="h-4 w-4 mr-2" />
                       Code Editor
                     </TabsTrigger>
                     <TabsTrigger value="cropped" className="data-[state=active]:bg-primary/10">
-                      <Crop className="h-4 w-4 mr-2" />
+                      <Crop width={24} height={24} className="h-4 w-4 mr-2" />
                       Cropped Region
                     </TabsTrigger>
                   </TabsList>
@@ -886,13 +886,13 @@ public class AreaCalculator {
                   </div>
                 ) : !croppedImage ? (
                   <div className="h-[50vh] flex flex-col items-center justify-center">
-                    <Crop className="h-10 w-10 text-muted-foreground mb-4" />
+                    <Crop width={24} height={24} className="h-10 w-10 text-muted-foreground mb-4" />
                     <p className="text-muted-foreground">Crop a region from the image first</p>
                     <p className="text-xs text-muted-foreground mt-2">Use the "Manual Crop" button</p>
                   </div>
                 ) : !extractedCode ? (
                   <div className="h-[50vh] flex flex-col items-center justify-center">
-                    <FileText className="h-10 w-10 text-muted-foreground mb-4" />
+                    <FileText width={24} height={24} className="h-10 w-10 text-muted-foreground mb-4" />
                     <p className="text-muted-foreground">No code extracted yet</p>
                     <p className="text-xs text-muted-foreground mt-2">Try cropping a different region</p>
                   </div>
@@ -925,7 +925,7 @@ public class AreaCalculator {
                     </div>
                   ) : (
                     <div className="text-center text-muted-foreground">
-                      <Crop className="h-10 w-10 mx-auto mb-4 opacity-50" />
+                      <Crop width={24} height={24} className="h-10 w-10 mx-auto mb-4 opacity-50" />
                       <p>No code region selected</p>
                       <p className="text-sm mt-2">Use the "Manual Crop" button to select a region</p>
                     </div>
@@ -976,7 +976,7 @@ public class AreaCalculator {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
         <div className="bg-card rounded-xl border p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-            <Crop size={24} className="text-primary" />
+            <Crop width={24} height={24} className="text-primary" />
           </div>
           <h3 className="text-xl font-semibold mb-2">Professional Cropping</h3>
           <p className="text-muted-foreground">
@@ -986,7 +986,7 @@ public class AreaCalculator {
 
         <div className="bg-card rounded-xl border p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-            <FileText size={24} className="text-primary" />
+            <FileText width={24} height={24} className="text-primary" />
           </div>
           <h3 className="text-xl font-semibold mb-2">OCR Text Extraction</h3>
           <p className="text-muted-foreground">
@@ -996,7 +996,7 @@ public class AreaCalculator {
 
         <div className="bg-card rounded-xl border p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-            <Code size={24} className="text-primary" />
+            <Code width={24} height={24} className="text-primary" />
           </div>
           <h3 className="text-xl font-semibold mb-2">Multi-language Support</h3>
           <p className="text-muted-foreground">

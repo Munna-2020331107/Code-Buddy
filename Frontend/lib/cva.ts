@@ -12,7 +12,7 @@ export function cva(
     defaultVariants?: Record<string, string>
   },
 ) {
-  return (props?: Record<string, string> & { className?: string }) => {
+  return (props?: Partial<Record<string, string>> & { className?: string }) => {
     const { className, ...variants } = props || {}
 
     // Start with the base classes

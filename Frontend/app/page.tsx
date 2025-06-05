@@ -18,7 +18,7 @@ import "./styles/home.css"
 
 export default function Home() {
   return (
-    <main className="main-container">
+    <main className="main-container safe-area">
       <div className="page-decoration decoration-1"></div>
       <div className="page-decoration decoration-2"></div>
 
