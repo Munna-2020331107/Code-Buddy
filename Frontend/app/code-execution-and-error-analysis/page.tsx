@@ -32,19 +32,19 @@ export default function CodeExecutionPage() {
 
         <div className="flex flex-wrap gap-4 mt-6">
           <div className="flex items-center gap-2 bg-background/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm">
-            <Terminal size={18} className="text-primary" />
+            <Terminal width={18} height={18} className="text-primary" />
             <span className="text-sm font-medium">Multiple Languages</span>
           </div>
           <div className="flex items-center gap-2 bg-background/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm">
-            <Zap size={18} className="text-primary" />
+            <Zap width={18} height={18} className="text-primary" />
             <span className="text-sm font-medium">Real-time Execution</span>
           </div>
           <div className="flex items-center gap-2 bg-background/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm">
-            <Lightbulb size={18} className="text-primary" />
+            <Lightbulb width={18} height={18} className="text-primary" />
             <span className="text-sm font-medium">AI-powered Feedback</span>
           </div>
           <div className="flex items-center gap-2 bg-background/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm">
-            <Code size={18} className="text-primary" />
+            <Code width={18} height={18} className="text-primary" />
             <span className="text-sm font-medium">Syntax Highlighting</span>
           </div>
         </div>
@@ -68,7 +68,7 @@ export default function CodeExecutionPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
         <div className="bg-card rounded-xl border p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-            <Terminal size={24} className="text-primary" />
+            <Terminal width={24} height={24} className="text-primary" />
           </div>
           <h3 className="text-xl font-semibold mb-2">Multi-language Support</h3>
           <p className="text-muted-foreground">
@@ -79,7 +79,7 @@ export default function CodeExecutionPage() {
 
         <div className="bg-card rounded-xl border p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-            <Lightbulb size={24} className="text-primary" />
+            <Lightbulb width={24} height={24} className="text-primary" />
           </div>
           <h3 className="text-xl font-semibold mb-2">AI-powered Analysis</h3>
           <p className="text-muted-foreground">
@@ -90,7 +90,7 @@ export default function CodeExecutionPage() {
 
         <div className="bg-card rounded-xl border p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-            <Zap size={24} className="text-primary" />
+            <Zap width={24} height={24} className="text-primary" />
           </div>
           <h3 className="text-xl font-semibold mb-2">Real-time Execution</h3>
           <p className="text-muted-foreground">

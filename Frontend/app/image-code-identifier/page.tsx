@@ -92,85 +92,36 @@ export default function ImageCodeIdentifierPage() {
 
   // Function to extract code from image using backend API
   const extractCodeFromImage = async (imageUrl: string) => {
-    // This would call your backend API
-    // For demo purposes, we'll simulate a response
-
     setIsProcessing(true)
 
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-
-    // This would be the actual implementation:
-    /*
-    const response = await fetch('/api/extract-code', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ imageUrl })
-    })
-    
-    const data = await response.json()
-    if (data.success) {
-      setExtractedCode(data.code)
-    } else {
-      throw new Error('Failed to extract code from image')
+    try {
+      const response = await fetch('http://localhost:3000/api/image-to-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ imageUrl })
+      })
+      
+      const data = await response.json()
+      if (data.success) {
+        setExtractedCode(data.code)
+        if (data.language) {
+          setSelectedLanguage(data.language)
+        }
+      } else {
+        throw new Error(data.error || 'Failed to extract code from image')
+      }
+    } catch (error) {
+      console.error('Error extracting code:', error)
+      toast({
+        title: "Extraction failed",
+        description: "Failed to extract code from image. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsProcessing(false)
     }
-    */
-
-    // For demo, generate code based on selected language
-    let extractedText = ""
-
-    // Simulate different code patterns based on language
-    if (selectedLanguage === "javascript") {
-      extractedText = `// Extracted from image using OCR
-function calculateArea(width, height) {
-  return width * height;
-}
-
-const width = 10;
-const height = 5;
-const area = calculateArea(width, height);
-console.log(\`The area is \${area} square units\`);`
-    } else if (selectedLanguage === "python") {
-      extractedText = `# Extracted from image using OCR
-def calculate_area(width, height):
-  return width * height
-
-width = 10
-height = 5
-area = calculate_area(width, height)
-print(f"The area is {area} square units")`
-    } else if (selectedLanguage === "java") {
-      extractedText = `// Extracted from image using OCR
-public class AreaCalculator {
-  public static void main(String[] args) {
-      int width = 10;
-      int height = 5;
-      int area = calculateArea(width, height);
-      System.out.println("The area is " + area + " square units");
-  }
-  
-  public static int calculateArea(int width, int height) {
-      return width * height;
-  }
-}`
-    } else {
-      // Default for other languages
-      extractedText = `// Extracted from image using OCR
-// Code appears to be in ${selectedLanguage}
-// This is a simulation of OCR text extraction
-// In a real application, the actual text from the image would be extracted`
-    }
-
-    // Set the extracted code
-    setExtractedCode(extractedText)
-    setIsProcessing(false)
-
-    toast({
-      title: "Code Extracted",
-      description: "Code has been extracted from the image",
-    })
   }
 
   const handleUploadButtonClick = () => {
