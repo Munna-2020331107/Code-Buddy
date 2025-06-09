@@ -25,7 +25,6 @@ export function Navbar() {
     { href: "/code-collaboration", label: "Code Collaboration" },
     { href: "/image-code-identifier", label: "Image Code Identifier" },
     { href: "/learning-schedule", label: "Learning Schedule" },
-    { href: "/cloud-storage", label: "Cloud Storage" },
   ]
 
   const toggleTheme = () => {

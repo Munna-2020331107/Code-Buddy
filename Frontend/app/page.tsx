@@ -13,7 +13,6 @@ import {
   Server,
   Users,
   Lightbulb,
-  Cloud,
 } from "@/components/icons"
 import "./styles/home.css"
 
@@ -122,16 +121,6 @@ export default function Home() {
             Image Code Identifier <span className="service-arrow">→</span>
           </h2>
           <p className="service-description">Extract and analyze code from images with our AI tools.</p>
-        </Link>
-
-        <Link href="/cloud-storage" className="service-link">
-          <div className="service-icon">
-            <Cloud className="h-10 w-10" />
-          </div>
-          <h2 className="service-title">
-            Cloud Storage <span className="service-arrow">→</span>
-          </h2>
-          <p className="service-description">Store and manage your code files securely in the cloud.</p>
         </Link>
 
         <Link href="/learning-schedule" className="service-link">
