@@ -13,7 +13,7 @@ const openai = new OpenAI({
  * @swagger
  * /api/image-to-code:
  *   post:
- *     summary: Convert image to code
+ *     summary: Convert image to code using DALL-E-3
  *     tags: [Image to Code]
  *     security:
  *       - bearerAuth: []
@@ -31,11 +31,12 @@ const openai = new OpenAI({
  *                 description: URL of the image containing code
  */
 router.post("/", auth, premium, async (req, res) => {
+  let conversion;
   try {
     const { imageUrl } = req.body;
 
     // Create new conversion record
-    const conversion = new ImageToCode({
+    conversion = new ImageToCode({
       user: req.user.id,
       imageUrl,
       status: "processing"
@@ -43,45 +44,43 @@ router.post("/", auth, premium, async (req, res) => {
 
     await conversion.save();
 
-    // Process image in background
-    processImage(conversion._id);
+    console.log("Processing image:", imageUrl);
 
-    res.status(201).json(conversion);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-/**
- * Process image and convert to code
- * @param {string} conversionId - ID of the conversion record
- */
-async function processImage(conversionId) {
-  try {
-    const conversion = await ImageToCode.findById(conversionId);
-    if (!conversion) return;
-
-    // TODO: Implement actual image processing and OCR
-    // For now, we'll simulate the process with GPT
+    // Process image using GPT-4
     const completion = await openai.chat.completions.create({
-      model: "gpt-4-vision-preview",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
-          content: "You are a code extraction expert. Extract code from the image and format it properly."
+          content: "You are a code extraction expert. Extract code from the image and format it properly. Return the code in a structured format with language detection."
         },
         {
           role: "user",
           content: [
-            { type: "text", text: "Extract and format the code from this image:" },
-            { type: "image_url", image_url: conversion.imageUrl }
+            { type: "text", text: "Extract and format the code from this image. Also detect the programming language:" },
+            { 
+              type: "image_url", 
+              image_url: {
+                url: imageUrl
+              }
+            }
           ]
         }
       ],
       max_tokens: 1000
     });
 
+    console.log("Model Response:", {
+      model: completion.model,
+      usage: completion.usage,
+      choices: completion.choices.map(choice => ({
+        message: choice.message,
+        finish_reason: choice.finish_reason
+      }))
+    });
+
     const extractedCode = completion.choices[0].message.content;
+    console.log("Extracted Code:", extractedCode);
 
     // Update conversion record
     conversion.originalText = extractedCode;
@@ -89,12 +88,21 @@ async function processImage(conversionId) {
     conversion.status = "completed";
     await conversion.save();
 
-    // Create code execution record if needed
-    if (conversion.convertedCode) {
-      // TODO: Implement code execution
-    }
+    // Return the response immediately
+    res.status(200).json({
+      success: true,
+      data: {
+        id: conversion._id,
+        code: extractedCode,
+        status: "completed",
+        createdAt: conversion.createdAt
+      }
+    });
+
   } catch (error) {
-    const conversion = await ImageToCode.findById(conversionId);
+    console.error("Error processing image:", error);
+
+    // Update conversion record with error if it exists
     if (conversion) {
       conversion.status = "failed";
       conversion.error = {
@@ -103,8 +111,17 @@ async function processImage(conversionId) {
       };
       await conversion.save();
     }
+
+    res.status(500).json({ 
+      success: false,
+      message: error.message,
+      error: {
+        type: "processing_error",
+        details: error.message
+      }
+    });
   }
-}
+});
 
 /**
  * @swagger

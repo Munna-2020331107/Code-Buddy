@@ -113,6 +113,7 @@ export default function CodeCollaborationPage() {
   })
   const [email, setEmail] = useState("")
   const [role, setRole] = useState("viewer")
+  const [shareWorkspaceId, setShareWorkspaceId] = useState<string | null>(null)
 
   useEffect(() => {
     fetchWorkspaces()
@@ -570,6 +571,26 @@ export default function CodeCollaborationPage() {
     setSelectedWorkspace(null);
   };
 
+  const handleShareClick = (workspaceId: string) => {
+    setShareWorkspaceId(workspaceId);
+    setIsShareDialogOpen(true);
+    setEmail("");
+    setRole("viewer");
+  };
+
+  const handleShareSubmit = async () => {
+    if (shareWorkspaceId && email) {
+      try {
+        await shareWorkspace(shareWorkspaceId, email, role);
+        setIsShareDialogOpen(false);
+        setShareWorkspaceId(null);
+        toast.success("Workspace shared successfully");
+      } catch (error) {
+        toast.error("Failed to share workspace");
+      }
+    }
+  };
+
   return (
     <div className="container py-8 px-4 md:px-6">
       {/* Header */}
@@ -616,11 +637,7 @@ export default function CodeCollaborationPage() {
                   </Button>
                 )}
                 { (
-                  <Button variant="ghost" onClick={() => {
-                    setIsShareDialogOpen(true);
-                    setEmail("");
-                    setRole("viewer");
-                  }}>
+                  <Button variant="ghost" onClick={() => handleShareClick(workspace._id)}>
                     <Share2 className="h-4 w-4" />
                   </Button>
                 )}
@@ -776,16 +793,13 @@ export default function CodeCollaborationPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsShareDialogOpen(false)}>
+            <Button variant="outline" onClick={() => {
+              setIsShareDialogOpen(false);
+              setShareWorkspaceId(null);
+            }}>
               Cancel
             </Button>
-            <Button onClick={() => {
-              const workspaceId = selectedWorkspace?._id;
-              if (workspaceId) {
-                shareWorkspace(workspaceId, email, role);
-                setIsShareDialogOpen(false);
-              }
-            }}>
+            <Button onClick={handleShareSubmit}>
               Share
             </Button>
           </DialogFooter>

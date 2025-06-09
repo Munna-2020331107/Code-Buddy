@@ -16,6 +16,7 @@ const codeExecutionRoutes = require("./routes/codeExecution");
 const imageToCodeRoutes = require("./routes/imageToCode");
 const learningScheduleRoutes = require("./routes/learningSchedule");
 const codeCollaborationRoutes = require("./routes/codeCollaboration");
+const pricingRoutes = require("./routes/pricing");
 
 connectDB();
 
@@ -41,6 +42,7 @@ app.use("/api/code-execution", codeExecutionRoutes);
 app.use("/api/image-to-code", imageToCodeRoutes);
 app.use("/api/learning-schedule", learningScheduleRoutes);
 app.use("/api/code-collaboration", codeCollaborationRoutes);
+app.use("/api/pricing", pricingRoutes);
 
 // WebSocket authentication middleware
 io.use((socket, next) => {
