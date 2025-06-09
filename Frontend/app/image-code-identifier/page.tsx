@@ -129,34 +129,20 @@ export default function ImageCodeIdentifierPage() {
       })
       
       const data = await response.json()
-      if (data.status === 'processing') {
-        // Poll for status updates
-        const pollInterval = setInterval(async () => {
-          const statusResponse = await fetch(`${API_URL}/api/image-to-code/${data._id}`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-          })
-          const statusData = await statusResponse.json()
-          
-          if (statusData.status === 'completed') {
-            clearInterval(pollInterval)
-            setExtractedCode(statusData.convertedCode)
-            setIsProcessing(false)
-            toast({
-              title: "Success",
-              description: "Code has been extracted from the image",
-            })
-          } else if (statusData.status === 'failed') {
-            clearInterval(pollInterval)
-            setIsProcessing(false)
-            toast({
-              title: "Error",
-              description: "Failed to extract code from image",
-              variant: "destructive",
-            })
-          }
-        }, 2000) // Poll every 2 seconds
+      if (data.success) {
+        setExtractedCode(data.data.code)
+        setIsProcessing(false)
+        toast({
+          title: "Success",
+          description: "Code has been extracted from the image",
+        })
+      } else {
+        setIsProcessing(false)
+        toast({
+          title: "Error",
+          description: data.message || "Failed to extract code from image",
+          variant: "destructive",
+        })
       }
     } catch (error) {
       console.error('Error extracting code:', error)

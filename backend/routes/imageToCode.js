@@ -9,6 +9,25 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+// Helper function to extract JSON from text
+const extractJsonFromText = (text) => {
+  try {
+    // Find the first occurrence of { and last occurrence of }
+    const startIndex = text.indexOf('{');
+    const endIndex = text.lastIndexOf('}');
+    
+    if (startIndex === -1 || endIndex === -1) {
+      return null;
+    }
+    
+    const jsonStr = text.slice(startIndex, endIndex + 1);
+    return JSON.parse(jsonStr);
+  } catch (error) {
+    console.error("Error parsing JSON:", error);
+    return null;
+  }
+};
+
 /**
  * @swagger
  * /api/image-to-code:
@@ -52,7 +71,7 @@ router.post("/", auth, premium, async (req, res) => {
       messages: [
         {
           role: "system",
-          content: "You are a code extraction expert. Extract code from the image and format it properly. Return the code in a structured format with language detection."
+          content: "You are a code extraction expert. Extract code from the image and format it properly. Return the code in a structured json format with language detection. The json should be in the following format: { code: string, language: string }"
         },
         {
           role: "user",
@@ -79,11 +98,18 @@ router.post("/", auth, premium, async (req, res) => {
       }))
     });
 
-    const extractedCode = completion.choices[0].message.content;
-    console.log("Extracted Code:", extractedCode);
+    const extractedText = completion.choices[0].message.content;
+    console.log("Raw Extracted Text:", extractedText);
+
+    // Try to extract JSON from the response
+    const extractedJson = extractJsonFromText(extractedText);
+    console.log("Extracted JSON:", extractedJson);
+
+    // If JSON extraction failed, use the raw text
+    const extractedCode = extractedJson ? extractedJson.code : extractedText;
 
     // Update conversion record
-    conversion.originalText = extractedCode;
+    conversion.originalText = extractedText;
     conversion.convertedCode = extractedCode;
     conversion.status = "completed";
     await conversion.save();
