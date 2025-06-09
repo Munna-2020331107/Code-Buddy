@@ -30,9 +30,14 @@ export default function ImageCodeIdentifierPage() {
   const [previousFeedback, setPreviousFeedback] = useState<string[]>([])
   const [isCodeExecutionDialogOpen, setIsCodeExecutionDialogOpen] = useState(false)
   const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [convertedImages, setConvertedImages] = useState<any[]>([])
+  const [isViewImagesDialogOpen, setIsViewImagesDialogOpen] = useState(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { toast } = useToast()
+
+  // Use the environment variable for the API base URL
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -90,87 +95,78 @@ export default function ImageCodeIdentifierPage() {
     }
   }
 
-  // Function to extract code from image using backend API
+  // Function to fetch all converted images
+  const fetchConvertedImages = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/image-to-code`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      })
+      const data = await response.json()
+      setConvertedImages(data)
+    } catch (error) {
+      console.error('Error fetching converted images:', error)
+      toast({
+        title: "Error",
+        description: "Failed to fetch converted images",
+        variant: "destructive",
+      })
+    }
+  }
+
+  // Update the extractCodeFromImage function to use your backend API
   const extractCodeFromImage = async (imageUrl: string) => {
-    // This would call your backend API
-    // For demo purposes, we'll simulate a response
-
     setIsProcessing(true)
-
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-
-    // This would be the actual implementation:
-    /*
-    const response = await fetch('/api/extract-code', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ imageUrl })
-    })
-    
-    const data = await response.json()
-    if (data.success) {
-      setExtractedCode(data.code)
-    } else {
-      throw new Error('Failed to extract code from image')
+    try {
+      const response = await fetch(`${API_URL}/api/image-to-code`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ imageUrl })
+      })
+      
+      const data = await response.json()
+      if (data.status === 'processing') {
+        // Poll for status updates
+        const pollInterval = setInterval(async () => {
+          const statusResponse = await fetch(`${API_URL}/api/image-to-code/${data._id}`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          })
+          const statusData = await statusResponse.json()
+          
+          if (statusData.status === 'completed') {
+            clearInterval(pollInterval)
+            setExtractedCode(statusData.convertedCode)
+            setIsProcessing(false)
+            toast({
+              title: "Success",
+              description: "Code has been extracted from the image",
+            })
+          } else if (statusData.status === 'failed') {
+            clearInterval(pollInterval)
+            setIsProcessing(false)
+            toast({
+              title: "Error",
+              description: "Failed to extract code from image",
+              variant: "destructive",
+            })
+          }
+        }, 2000) // Poll every 2 seconds
+      }
+    } catch (error) {
+      console.error('Error extracting code:', error)
+      setIsProcessing(false)
+      toast({
+        title: "Error",
+        description: "Failed to extract code from image",
+        variant: "destructive",
+      })
     }
-    */
-
-    // For demo, generate code based on selected language
-    let extractedText = ""
-
-    // Simulate different code patterns based on language
-    if (selectedLanguage === "javascript") {
-      extractedText = `// Extracted from image using OCR
-function calculateArea(width, height) {
-  return width * height;
-}
-
-const width = 10;
-const height = 5;
-const area = calculateArea(width, height);
-console.log(\`The area is \${area} square units\`);`
-    } else if (selectedLanguage === "python") {
-      extractedText = `# Extracted from image using OCR
-def calculate_area(width, height):
-  return width * height
-
-width = 10
-height = 5
-area = calculate_area(width, height)
-print(f"The area is {area} square units")`
-    } else if (selectedLanguage === "java") {
-      extractedText = `// Extracted from image using OCR
-public class AreaCalculator {
-  public static void main(String[] args) {
-      int width = 10;
-      int height = 5;
-      int area = calculateArea(width, height);
-      System.out.println("The area is " + area + " square units");
-  }
-  
-  public static int calculateArea(int width, int height) {
-      return width * height;
-  }
-}`
-    } else {
-      // Default for other languages
-      extractedText = `// Extracted from image using OCR
-// Code appears to be in ${selectedLanguage}
-// This is a simulation of OCR text extraction
-// In a real application, the actual text from the image would be extracted`
-    }
-
-    // Set the extracted code
-    setExtractedCode(extractedText)
-    setIsProcessing(false)
-
-    toast({
-      title: "Code Extracted",
-      description: "Code has been extracted from the image",
-    })
   }
 
   const handleUploadButtonClick = () => {
@@ -269,7 +265,7 @@ public class AreaCalculator {
       </div>
 
       {/* Upload Section */}
-      <div className="mb-8">
+      <div className="mb-8 flex gap-4">
         <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" className="hidden" />
         <Button
           onClick={handleUploadButtonClick}
@@ -288,6 +284,18 @@ public class AreaCalculator {
               Upload Image with Code
             </>
           )}
+        </Button>
+        
+        <Button
+          onClick={() => {
+            fetchConvertedImages()
+            setIsViewImagesDialogOpen(true)
+          }}
+          variant="outline"
+          size="lg"
+        >
+          <ImageIcon className="mr-2 h-5 w-5" />
+          View Converted Images
         </Button>
       </div>
 
@@ -566,6 +574,66 @@ public class AreaCalculator {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add View Images Dialog */}
+      <Dialog open={isViewImagesDialogOpen} onOpenChange={setIsViewImagesDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl flex items-center gap-2">
+              <ImageIcon className="h-5 w-5 text-primary" />
+              Converted Images
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {convertedImages.length > 0 ? (
+              convertedImages.map((image) => (
+                <Card key={image._id} className="overflow-hidden">
+                  <CardContent className="p-4">
+                    <div className="aspect-video relative mb-4">
+                      <img
+                        src={image.imageUrl}
+                        alt="Converted code"
+                        className="w-full h-full object-cover rounded-md"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">
+                          Status: {image.status}
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          {new Date(image.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                      {image.convertedCode && (
+                        <pre className="bg-muted p-2 rounded-md text-sm overflow-x-auto">
+                          {image.convertedCode}
+                        </pre>
+                      )}
+                      {image.status === 'failed' && image.error && (
+                        <div className="text-red-500 text-sm">
+                          Error: {image.error.message}
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <div className="col-span-2 text-center py-8 text-muted-foreground">
+                No converted images found
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsViewImagesDialogOpen(false)}>
               Close
             </Button>
           </DialogFooter>

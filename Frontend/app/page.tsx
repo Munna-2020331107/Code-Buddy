@@ -132,6 +132,16 @@ export default function Home() {
           </h2>
           <p className="service-description">Create personalized learning paths for your coding journey.</p>
         </Link>
+
+        <Link href="/CloudStorage" className="service-link">
+          <div className="service-icon">
+            <Database className="h-10 w-10" />
+          </div>
+          <h2 className="service-title">
+            Cloud Storage <span className="service-arrow">→</span>
+          </h2>
+          <p className="service-description">Store and manage your code and files securely in the cloud.</p>
+        </Link>
       </div>
     </main>
   )
