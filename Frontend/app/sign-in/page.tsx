@@ -31,13 +31,20 @@ export default function SignInPage() {
       })
 
       const data = await response.json()
+      console.log(data)
 
       if (response.ok && data.token) {
         localStorage.setItem("token", data.token)
         localStorage.setItem("userId", data.userId)
         localStorage.setItem("userName", data.userName)
+        localStorage.setItem("premium", data.premium)
+        localStorage.setItem("premium_type", data.premium_type)
+        localStorage.setItem("premium_expiry_date", data.premium_expiry_date)
         toast.success("Welcome back! Redirecting to dashboard...")
-        router.push("/")
+        setTimeout(() => {
+          router.push("/")
+          router.refresh()
+        }, 100)
       } else {
         setError(data.message || "Login failed")
         toast.error(data.message || "Login failed")

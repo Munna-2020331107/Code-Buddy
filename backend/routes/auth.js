@@ -130,7 +130,7 @@ router.post("/login", async (req, res) => {
       { expiresIn: "24h" }
     );
 
-    res.json({ token, message: "Login successful" , userId: user._id, userName: user.name});
+    res.json({ token, message: "Login successful" , userId: user._id, userName: user.name, premium: user.premium, premium_type: user.premium_type, premium_expiry_date: user.premium_expiry_date});
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
