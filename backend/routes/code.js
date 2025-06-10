@@ -29,11 +29,19 @@ router.post("/", auth, async (req, res) => {
       spaceComplexity
     } = req.body;
 
+    // Validate required fields
+    if (!code || typeof code !== 'string' || code.trim().length === 0) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Code is required and cannot be empty" 
+      });
+    }
+
     const newCode = new Code({
       user: req.user.id,
       title,
       description,
-      code,
+      code: code.trim(),
       language,
       category,
       difficulty,
@@ -46,9 +54,17 @@ router.post("/", auth, async (req, res) => {
     });
 
     await newCode.save();
-    res.status(201).json(newCode);
+    res.status(201).json({
+      success: true,
+      data: newCode
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Code creation error:", error);
+    res.status(500).json({ 
+      success: false,
+      message: error.message,
+      errors: error.errors
+    });
   }
 });
 

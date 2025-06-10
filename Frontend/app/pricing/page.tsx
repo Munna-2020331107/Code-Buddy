@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Check } from "lucide-react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface PricingPlan {
   id: string;
@@ -19,6 +20,8 @@ export default function PricingPage() {
   const [plans, setPlans] = useState<PricingPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [processingPayment, setProcessingPayment] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     fetchPlans();
@@ -38,32 +41,34 @@ export default function PricingPage() {
 
   const handleSubscribe = async (planId: string) => {
     try {
+      setProcessingPayment(true);
       const token = localStorage.getItem("token");
       if (!token) {
         toast.error("Please login to subscribe");
         return;
       }
 
-      // Here you would integrate with Amarpay
-      // For now, we'll just simulate the payment
-      const paymentId = "simulated_payment_" + Date.now();
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/pricing/subscribe`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/pricing/init-payment`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ planId, paymentId }),
+        body: JSON.stringify({ planId }),
       });
 
-      if (response.ok) {
-        toast.success("Subscription successful!");
+      const data = await response.json();
+      
+      if (data.success && data.data.gateway_url) {
+        // Redirect to SSL Commerz payment page
+        window.location.href = data.data.gateway_url;
       } else {
-        throw new Error("Subscription failed");
+        throw new Error(data.message || "Failed to initialize payment");
       }
-    } catch (error) {
-      toast.error("Failed to process subscription");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to process payment");
+    } finally {
+      setProcessingPayment(false);
     }
   };
 
@@ -121,8 +126,9 @@ export default function PricingPage() {
                 setSelectedPlan(plan.id);
                 handleSubscribe(plan.id);
               }}
+              disabled={processingPayment}
             >
-              Subscribe Now
+              {processingPayment ? "Processing..." : "Subscribe Now"}
             </Button>
           </Card>
         ))}

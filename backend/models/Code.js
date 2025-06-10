@@ -19,7 +19,14 @@ const CodeSchema = new mongoose.Schema(
     },
     code: {
       type: String,
-      required: true
+      required: [true, "Code is required"],
+      trim: true,
+      validate: {
+        validator: function(v) {
+          return v && v.length > 0;
+        },
+        message: "Code cannot be empty"
+      }
     },
     language: {
       type: String,
@@ -152,6 +159,15 @@ CodeSchema.virtual('likeCount').get(function() {
 // Virtual for comment count
 CodeSchema.virtual('commentCount').get(function() {
   return this.comments.length;
+});
+
+// Pre-save middleware to ensure code is properly formatted
+CodeSchema.pre('save', function(next) {
+  if (this.code) {
+    // Trim whitespace and ensure it's a string
+    this.code = String(this.code).trim();
+  }
+  next();
 });
 
 module.exports = mongoose.model("Code", CodeSchema); 

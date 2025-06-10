@@ -12,7 +12,10 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "Code Buddy",
   description: "Your coding companion for learning and development",
-    generator: 'v0.dev'
+  generator: 'v0.dev',
+  icons: {
+    icon: '/icon.PNG',
+  },
 }
 
 export default function RootLayout({

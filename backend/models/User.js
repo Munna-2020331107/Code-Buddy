@@ -16,6 +16,8 @@ const UserSchema = new mongoose.Schema(
       default: null
     },
     picture_url: { type: String, default: "" }, // Stores URL of profile picture
+    transaction_id: { type: String, default: null },
+    pending_plan_id: { type: String, default: null }
   },
   { timestamps: true } // Automatically creates createdAt & updatedAt
 );
