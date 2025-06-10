@@ -14,11 +14,12 @@ const auth = require("../middleware/auth");
  */
 router.post("/", auth, async (req, res) => {
   try {
+    console.log(req.body);
     const {
       title,
       description,
       code,
-      language,
+      programmingLanguage,
       category,
       difficulty,
       tags,
@@ -42,12 +43,12 @@ router.post("/", auth, async (req, res) => {
       title,
       description,
       code: code.trim(),
-      language,
+      programmingLanguage,
       category,
-      difficulty,
-      tags,
-      isPublic,
-      dependencies,
+      difficulty: difficulty || "beginner",
+      tags: tags || [],
+      isPublic: isPublic || false,
+      dependencies: dependencies || [],
       documentation,
       timeComplexity,
       spaceComplexity
@@ -79,8 +80,9 @@ router.post("/", auth, async (req, res) => {
  */
 router.get("/", auth, async (req, res) => {
   try {
+    console.log(req.body);
     const {
-      language,
+      programmingLanguage,
       category,
       difficulty,
       tags,
@@ -89,12 +91,13 @@ router.get("/", auth, async (req, res) => {
       sortOrder = "desc",
       page = 1,
       limit = 10
-    } = req.query;
+    } = req.body;
+    
 
     const query = {};
 
     // Add filters
-    if (language) query.language = language;
+    if (programmingLanguage) query.programmingLanguage = programmingLanguage;
     if (category) query.category = category;
     if (difficulty) query.difficulty = difficulty;
     if (tags) query.tags = { $in: tags.split(",") };
@@ -122,13 +125,21 @@ router.get("/", auth, async (req, res) => {
     const total = await Code.countDocuments(query);
 
     res.json({
-      codes,
-      total,
-      page: parseInt(page),
-      totalPages: Math.ceil(total / limit)
+      success: true,
+      data: {
+        codes,
+        total,
+        page: parseInt(page),
+        totalPages: Math.ceil(total / limit)
+      }
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Error fetching codes:", error);
+    res.status(500).json({ 
+      success: false,
+      message: error.message,
+      errors: error.errors
+    });
   }
 });
 
@@ -195,7 +206,7 @@ router.put("/:id", auth, async (req, res) => {
       "title",
       "description",
       "code",
-      "language",
+      "programmingLanguage",
       "category",
       "difficulty",
       "tags",

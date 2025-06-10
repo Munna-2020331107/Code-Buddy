@@ -4,73 +4,30 @@ const CodeSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true
+      ref: "User"
     },
     title: {
       type: String,
-      required: true,
       trim: true
     },
     description: {
       type: String,
-      required: true,
       trim: true
     },
     code: {
       type: String,
-      required: [true, "Code is required"],
-      trim: true,
-      validate: {
-        validator: function(v) {
-          return v && v.length > 0;
-        },
-        message: "Code cannot be empty"
-      }
+      trim: true
     },
-    language: {
+    programmingLanguage: {
       type: String,
-      required: true,
-      enum: [
-        "javascript",
-        "python",
-        "java",
-        "c++",
-        "c#",
-        "php",
-        "ruby",
-        "swift",
-        "kotlin",
-        "go",
-        "rust",
-        "typescript",
-        "html",
-        "css",
-        "sql",
-        "shell",
-        "other"
-      ]
+      trim: true
     },
     category: {
       type: String,
-      required: true,
-      enum: [
-        "algorithm",
-        "data-structure",
-        "web-development",
-        "mobile-development",
-        "game-development",
-        "system-programming",
-        "database",
-        "machine-learning",
-        "security",
-        "testing",
-        "other"
-      ]
+      trim: true
     },
     difficulty: {
       type: String,
-      enum: ["beginner", "intermediate", "advanced"],
       default: "beginner"
     },
     tags: [{
@@ -95,12 +52,10 @@ const CodeSchema = new mongoose.Schema(
     comments: [{
       user: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        required: true
+        ref: "User"
       },
       text: {
-        type: String,
-        required: true
+        type: String
       },
       createdAt: {
         type: Date,
@@ -137,37 +92,8 @@ const CodeSchema = new mongoose.Schema(
     }
   },
   { 
-    timestamps: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true }
+    timestamps: true
   }
 );
-
-// Add text index for search
-CodeSchema.index({ 
-  title: 'text', 
-  description: 'text', 
-  tags: 'text',
-  documentation: 'text'
-});
-
-// Virtual for like count
-CodeSchema.virtual('likeCount').get(function() {
-  return this.likes.length;
-});
-
-// Virtual for comment count
-CodeSchema.virtual('commentCount').get(function() {
-  return this.comments.length;
-});
-
-// Pre-save middleware to ensure code is properly formatted
-CodeSchema.pre('save', function(next) {
-  if (this.code) {
-    // Trim whitespace and ensure it's a string
-    this.code = String(this.code).trim();
-  }
-  next();
-});
 
 module.exports = mongoose.model("Code", CodeSchema); 
