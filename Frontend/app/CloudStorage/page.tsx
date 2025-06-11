@@ -81,7 +81,11 @@ export default function CloudStoragePage() {
         sortOrder: "desc"
       });
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/code?${queryParams}`, {
+      const endpoint = type === "own" 
+        ? `${process.env.NEXT_PUBLIC_API_URL}/api/code/user`
+        : `${process.env.NEXT_PUBLIC_API_URL}/api/code`;
+
+      const response = await fetch(`${endpoint}?${queryParams}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

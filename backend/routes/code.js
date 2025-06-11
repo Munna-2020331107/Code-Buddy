@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Code = require("../models/Code");
 const auth = require("../middleware/auth");
+const mongoose = require("mongoose");
 
 /**
  * @swagger
@@ -80,7 +81,6 @@ router.post("/", auth, async (req, res) => {
  */
 router.get("/", auth, async (req, res) => {
   try {
-    console.log(req.body);
     const {
       programmingLanguage,
       category,
@@ -91,10 +91,9 @@ router.get("/", auth, async (req, res) => {
       sortOrder = "desc",
       page = 1,
       limit = 10
-    } = req.body;
-    
+    } = req.query;
 
-    const query = {};
+    const query = { isPublic: true };
 
     // Add filters
     if (programmingLanguage) query.programmingLanguage = programmingLanguage;
@@ -105,22 +104,13 @@ router.get("/", auth, async (req, res) => {
       query.$text = { $search: search };
     }
 
-    // Add visibility filter
-    query.$or = [
-      { user: req.user.id },
-      { isPublic: true }
-    ];
-
     const sort = {};
     sort[sortBy] = sortOrder === "desc" ? -1 : 1;
 
     const codes = await Code.find(query)
       .sort(sort)
       .skip((page - 1) * limit)
-      .limit(parseInt(limit))
-      .populate("user", "name email")
-      .populate("likes", "name")
-      .populate("comments.user", "name");
+      .limit(parseInt(limit));
 
     const total = await Code.countDocuments(query);
 
@@ -355,6 +345,56 @@ router.delete("/:id/comment/:commentId", auth, async (req, res) => {
     res.json(code);
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/code/user:
+ *   get:
+ *     summary: Get all code snippets for the authenticated user
+ *     tags: [Code]
+ *     security:
+ *       - bearerAuth: []
+ */
+router.get("/user", auth, async (req, res) => {
+  try {
+    const {
+      sortBy = "createdAt",
+      sortOrder = "desc",
+      page = 1,
+      limit = 10
+    } = req.query;
+
+    // Use string user ID directly
+    const query = { user: req.user.id };
+
+    const sort = {};
+    sort[sortBy] = sortOrder === "desc" ? -1 : 1;
+
+    const codes = await Code.find(query)
+      .sort(sort)
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit));
+
+    const total = await Code.countDocuments(query);
+
+    res.json({
+      success: true,
+      data: {
+        codes,
+        total,
+        page: parseInt(page),
+        totalPages: Math.ceil(total / limit)
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching user codes:", error);
+    res.status(500).json({ 
+      success: false,
+      message: error.message,
+      errors: error.errors
+    });
   }
 });
 
