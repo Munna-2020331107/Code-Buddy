@@ -68,9 +68,6 @@ export function Navbar() {
   return (
     <header className="header">
       <div className="header-container">
-        <div className="brand">
-          <Logo className="brand-link" />
-        </div>
         <nav className="nav" aria-label="Main navigation">
           <div className="nav-container">
             {routes.map((route) => (
@@ -89,8 +86,7 @@ export function Navbar() {
         <div className="nav-divider" />
         <div className="actions">
           <button aria-label="Toggle Theme" className="theme-button" onClick={toggleTheme} type="button">
-            <Sun className="sun-icon" />
-            <Moon className="moon-icon" />
+            {theme === "dark" ? <Sun className="theme-icon" /> : <Moon className="theme-icon" />}
           </button>
           {isLoggedIn ? (
             <button onClick={handleLogout} className="sign-in-button" type="button">
