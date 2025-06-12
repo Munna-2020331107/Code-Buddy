@@ -1,3 +1,5 @@
+"use client"
+
 import Link from "next/link"
 import {
   Code,
@@ -15,8 +17,17 @@ import {
   Lightbulb,
 } from "@/components/icons"
 import "./styles/home.css"
+import { useEffect } from "react"
+import { initParallax } from "./scripts/parallax"
 
 export default function Home() {
+  useEffect(() => {
+    const cleanup = initParallax();
+    return () => {
+      if (cleanup) cleanup();
+    };
+  }, []);
+
   return (
     <main className="main-container safe-area">
       <div className="page-decoration decoration-1"></div>

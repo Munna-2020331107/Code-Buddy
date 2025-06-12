@@ -15,13 +15,14 @@ export function Navbar() {
   const router = useRouter()
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [isPremium, setIsPremium] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
 
   useEffect(() => {
     const token = localStorage.getItem("token")
     const premium = localStorage.getItem("premium")
     setIsLoggedIn(!!token)
     setIsPremium(premium === "true")
-  }, [pathname]) // Add pathname as dependency to update on route change
+  }, [pathname])
 
   const routes = [
     { href: "/code-execution-and-error-analysis", label: "Code Execution and Error Analysis", requiresAuth: true },
@@ -50,13 +51,12 @@ export function Navbar() {
   }
 
   const handleRouteClick = (route: any, e: React.MouseEvent) => {
-    if (!isLoggedIn) {
+    if (!isLoggedIn && route.requiresAuth) {
       e.preventDefault()
       toast.error("Please sign in to access this feature")
       router.push("/sign-in")
       return
     }
-
     if (route.requiresPremium && !isPremium) {
       e.preventDefault()
       toast.error("This feature requires a premium subscription")
@@ -71,26 +71,29 @@ export function Navbar() {
         <div className="brand">
           <Logo className="brand-link" />
         </div>
-        <nav className="nav">
-          {routes.map((route) => (
-            <Link
-              key={route.href}
-              href={route.href}
-              className={`nav-link ${pathname === route.href ? "nav-link-active" : "nav-link-inactive"}`}
-              onClick={(e) => handleRouteClick(route, e)}
-            >
-              {route.label}
-            </Link>
-          ))}
+        <nav className="nav" aria-label="Main navigation">
+          <div className="nav-container">
+            {routes.map((route) => (
+              <Link
+                key={route.href}
+                href={route.href}
+                className={`nav-link${pathname === route.href ? " nav-link-active" : ""}`}
+                onClick={(e) => handleRouteClick(route, e)}
+                aria-current={pathname === route.href ? "page" : undefined}
+              >
+                {route.label}
+              </Link>
+            ))}
+          </div>
         </nav>
+        <div className="nav-divider" />
         <div className="actions">
-          <button aria-label="Toggle Theme" className="theme-button" onClick={toggleTheme}>
+          <button aria-label="Toggle Theme" className="theme-button" onClick={toggleTheme} type="button">
             <Sun className="sun-icon" />
             <Moon className="moon-icon" />
-            <span className="sr-only">Toggle theme</span>
           </button>
           {isLoggedIn ? (
-            <button onClick={handleLogout} className="sign-in-button">
+            <button onClick={handleLogout} className="sign-in-button" type="button">
               Sign Out
             </button>
           ) : (
@@ -98,8 +101,45 @@ export function Navbar() {
               Sign In
             </Link>
           )}
+          <button
+            className="hamburger"
+            aria-label="Open mobile menu"
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-nav"
+            onClick={() => setMobileOpen((v) => !v)}
+            type="button"
+          >
+            <span aria-hidden="true">☰</span>
+          </button>
         </div>
       </div>
+      {mobileOpen && (
+        <nav className="mobile-nav" id="mobile-nav" aria-label="Mobile navigation">
+          {routes.map((route) => (
+            <Link
+              key={route.href}
+              href={route.href}
+              className={`nav-link${pathname === route.href ? " nav-link-active" : ""}`}
+              onClick={(e) => {
+                handleRouteClick(route, e)
+                setMobileOpen(false)
+              }}
+              aria-current={pathname === route.href ? "page" : undefined}
+            >
+              {route.label}
+            </Link>
+          ))}
+          {isLoggedIn ? (
+            <button onClick={() => { handleLogout(); setMobileOpen(false); }} className="sign-in-button" type="button">
+              Sign Out
+            </button>
+          ) : (
+            <Link href="/sign-in" className="sign-in-button" onClick={() => setMobileOpen(false)}>
+              Sign In
+            </Link>
+          )}
+        </nav>
+      )}
     </header>
   )
 }
