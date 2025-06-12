@@ -93,7 +93,8 @@ router.get("/", auth, async (req, res) => {
       limit = 10
     } = req.query;
 
-    const query = { isPublic: true };
+    // const query = { isPublic: true };
+    const query = {};
 
     // Add filters
     if (programmingLanguage) query.programmingLanguage = programmingLanguage;
@@ -358,16 +359,20 @@ router.delete("/:id/comment/:commentId", auth, async (req, res) => {
  *       - bearerAuth: []
  */
 router.get("/user", auth, async (req, res) => {
+  console.log(req.user);
   try {
+    console.log("hello");
     const {
       sortBy = "createdAt",
       sortOrder = "desc",
       page = 1,
       limit = 10
     } = req.query;
+    console.log(req.query);
 
     // Use string user ID directly
     const query = { user: req.user.id };
+    console.log(query);
 
     const sort = {};
     sort[sortBy] = sortOrder === "desc" ? -1 : 1;

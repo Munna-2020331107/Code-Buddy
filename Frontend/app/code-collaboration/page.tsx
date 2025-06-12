@@ -49,13 +49,13 @@ interface WebSocketMessage {
   userName?: string
 }
 
-interface ButtonProps {
+interface CustomButtonProps {
   children: React.ReactNode;
   variant?: 'primary' | 'secondary' | 'danger' | 'outline' | 'ghost';
   onClick?: () => void;
 }
 
-const Button: React.FC<ButtonProps> = ({ children, variant = 'primary', onClick }) => {
+const CustomButton: React.FC<CustomButtonProps> = ({ children, variant = 'primary', onClick }) => {
   const baseStyles = "px-4 py-2 rounded-md font-medium transition-colors";
   const variantStyles = {
     primary: "bg-blue-600 text-white hover:bg-blue-700",
@@ -324,7 +324,7 @@ export default function CodeCollaborationPage() {
         timestamp: new Date().toISOString()
       });
       setActiveUsers(prev => [...prev, { id: data.userId, name: data.username }]);
-      toast.success(`${data.username} joined the workspace`);
+      toast.success("One of the collaborators joined the code collaboration");
     })
 
     newSocket.on("user-left", (data: any) => {
