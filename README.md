@@ -122,22 +122,6 @@ Code Buddy is a platform that enables users to:
 
 ---
 
-### 🔹 6. Admin Dashboard
-
-#### 👨‍💼 Admin Features:
-
-* 👤 **User Management:**
-
-  * 👁 View, edit, or delete user accounts.
-  * 📊 Monitor user activity.
-* 🗄 **Content Management:**
-
-  * 📂 Manage stored code entries.
-* 💳 **System Operations:**
-
-  * 🔄 Handle premium subscriptions.
-
----
 
 ## 🔒 Non-Functional Requirements
 
