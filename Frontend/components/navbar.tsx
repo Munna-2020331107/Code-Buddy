@@ -29,7 +29,7 @@ export function Navbar() {
     { href: "/code-collaboration", label: "Code Collaboration", requiresAuth: true },
     { href: "/image-code-identifier", label: "Image Code Identifier", requiresAuth: true, requiresPremium: true },
     { href: "/learning-schedule", label: "Learning Schedule", requiresAuth: true, requiresPremium: true },
-    { href: "/CloudStorage", label: "Cloud Storage", requiresAuth: true },
+    { href: "/CloudStorage", label: "Code Storage", requiresAuth: true },
     { href: "/pricing", label: "Pricing", requiresAuth: false },
   ]
 

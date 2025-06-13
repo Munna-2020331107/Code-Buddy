@@ -10,7 +10,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Badge } from "@/components/ui/badge"
 import toast from "react-hot-toast"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Trash2 } from "lucide-react"
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -244,15 +244,55 @@ export default function CloudStoragePage() {
     }
   };
 
+  const handleDelete = async (snippetId: string) => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/code/${snippetId}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete code snippet");
+      }
+
+      toast.success("Code snippet deleted successfully");
+      // Refresh the snippets list
+      if (tab === "own") {
+        fetchSnippets("own");
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to delete code snippet");
+    }
+  };
+
   const CodeSnippetCard = ({ snippet }: { snippet: CodeSnippet }) => {
     return (
-      <Card className="w-full cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => handleSnippetClick(snippet)}>
+      <Card className="w-full cursor-pointer hover:bg-accent/50 transition-colors">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>{snippet.title}</span>
-            <Badge variant={snippet.isPublic ? "default" : "secondary"}>
-              {snippet.isPublic ? "Public" : "Private"}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant={snippet.isPublic ? "default" : "secondary"}>
+                {snippet.isPublic ? "Public" : "Private"}
+              </Badge>
+              {snippet.user === localStorage.getItem("userId") && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-destructive hover:text-destructive/90"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (window.confirm("Are you sure you want to delete this code snippet?")) {
+                      handleDelete(snippet._id);
+                    }
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </CardTitle>
           <CardDescription>{snippet.description}</CardDescription>
         </CardHeader>
@@ -278,7 +318,7 @@ export default function CloudStoragePage() {
 
   return (
     <div className="container py-8 px-4 md:px-6">
-      <h1 className="text-3xl font-bold mb-6">Cloud Storage</h1>
+      <h1 className="text-3xl font-bold mb-6">Code Storage</h1>
       <Tabs value={tab} onValueChange={setTab} className="w-full">
         <TabsList className="mb-6">
           <TabsTrigger value="editor">Editor</TabsTrigger>

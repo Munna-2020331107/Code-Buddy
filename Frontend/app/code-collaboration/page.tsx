@@ -592,7 +592,7 @@ export default function CodeCollaborationPage() {
   };
 
   return (
-    <div className="container py-8 px-4 md:px-6">
+    <div className="w-full max-w-[2000px] mx-auto px-2">
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
@@ -607,7 +607,7 @@ export default function CodeCollaborationPage() {
 
       {/* Workspaces Grid */}
       {!selectedWorkspace && (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {workspaces.map((workspace) => (
             <Card key={workspace._id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
@@ -649,7 +649,7 @@ export default function CodeCollaborationPage() {
 
       {/* Code Editor */}
       {selectedWorkspace && (
-        <div className="h-[calc(100vh-12rem)]">
+        <div className="h-[calc(100vh-8rem)]">
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-4">
               <Button

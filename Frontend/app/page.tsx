@@ -73,7 +73,7 @@ export default function Home() {
     },
     { 
       href: "/CloudStorage", 
-      label: "Cloud Storage",
+      label: "Code Storage",
       icon: <Database className="h-10 w-10" />,
       requiresAuth: true 
     },
