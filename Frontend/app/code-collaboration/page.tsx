@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "react-hot-toast"
-import { Plus, Share2, Users, Code2 } from "lucide-react"
+import { Plus, Share2, Users, Code2, ArrowLeft } from "lucide-react"
 import CodeEditor from "@/components/Playground/CodeEditor"
 import { io, Socket } from "socket.io-client"
 
@@ -651,7 +651,17 @@ export default function CodeCollaborationPage() {
       {selectedWorkspace && (
         <div className="h-[calc(100vh-12rem)]">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold">{selectedWorkspace.title}</h2>
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleBackToWorkspaces}
+                className="hover:bg-accent"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <h2 className="text-2xl font-bold">{selectedWorkspace.title}</h2>
+            </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
@@ -663,9 +673,6 @@ export default function CodeCollaborationPage() {
                   Share
                 </Button>
               )}
-              <Button variant="outline" onClick={handleBackToWorkspaces}>
-                Back to Workspaces
-              </Button>
             </div>
           </div>
           <CodeEditor
