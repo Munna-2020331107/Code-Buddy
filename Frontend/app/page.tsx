@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import {
   Code,
   FileJson,
@@ -21,9 +22,13 @@ import "./styles/home.css"
 import { useEffect, useState } from "react"
 import { initParallax } from "./scripts/parallax"
 import { Sidebar } from "@/components/Sidebar"
+import toast from "react-hot-toast"
 
 export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const router = useRouter()
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isPremium, setIsPremium] = useState(false)
 
   useEffect(() => {
     const cleanup = initParallax();
@@ -31,6 +36,68 @@ export default function Home() {
       if (cleanup) cleanup();
     };
   }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token")
+    const premium = localStorage.getItem("premium")
+    setIsLoggedIn(!!token)
+    setIsPremium(premium === "true")
+  }, [])
+
+  const routes = [
+    { 
+      href: "/code-execution-and-error-analysis", 
+      label: "Code Execution and Error Analysis",
+      icon: <Server className="h-10 w-10" />,
+      requiresAuth: true 
+    },
+    { 
+      href: "/code-collaboration", 
+      label: "Code Collaboration",
+      icon: <BookOpen className="h-10 w-10" />,
+      requiresAuth: true 
+    },
+    { 
+      href: "/image-code-identifier", 
+      label: "Image Code Identifier",
+      icon: <Lightbulb className="h-10 w-10" />,
+      requiresAuth: true,
+      requiresPremium: true 
+    },
+    { 
+      href: "/learning-schedule", 
+      label: "Learning Schedule",
+      icon: <Users className="h-10 w-10" />,
+      requiresAuth: true,
+      requiresPremium: true 
+    },
+    { 
+      href: "/CloudStorage", 
+      label: "Cloud Storage",
+      icon: <Database className="h-10 w-10" />,
+      requiresAuth: true 
+    },
+    { 
+      href: "/pricing", 
+      label: "Pricing",
+      icon: <Sparkles className="h-10 w-10" />,
+      requiresAuth: false 
+    },
+  ]
+
+  const handleRouteClick = (route: any, e: React.MouseEvent) => {
+    if (!isLoggedIn && route.requiresAuth) {
+      e.preventDefault()
+      toast.error("Please sign in to access this feature")
+      router.push("/sign-in")
+      return
+    }
+    if (route.requiresPremium && !isPremium) {
+      e.preventDefault()
+      router.push("/pricing")
+      return
+    }
+  }
 
   return (
     <div style={{ display: "flex" }}>
@@ -155,65 +222,28 @@ export default function Home() {
         </div>
 
         <div className="services-grid">
-          <Link href="/code-execution-and-error-analysis" className="service-link">
-            <div className="service-icon">
-              <Server className="h-10 w-10" />
-            </div>
-            <h2 className="service-title">
-              Code Execution and Error Analysis <span className="service-arrow">→</span>
-            </h2>
-            <p className="service-description">Run code and get detailed error analysis with AI assistance.</p>
-          </Link>
-
-          <Link href="/code-collaboration" className="service-link">
-            <div className="service-icon">
-              <BookOpen className="h-10 w-10" />
-            </div>
-            <h2 className="service-title">
-              Code Collaboration <span className="service-arrow">→</span>
-            </h2>
-            <p className="service-description">Work together on code projects in real-time with team members.</p>
-          </Link>
-
-          <Link href="/image-code-identifier" className="service-link">
-            <div className="service-icon">
-              <Lightbulb className="h-10 w-10" />
-            </div>
-            <h2 className="service-title">
-              Image Code Identifier <span className="service-arrow">→</span>
-            </h2>
-            <p className="service-description">Extract and analyze code from images with our AI tools.</p>
-          </Link>
-
-          <Link href="/learning-schedule" className="service-link">
-            <div className="service-icon">
-              <Users className="h-10 w-10" />
-            </div>
-            <h2 className="service-title">
-              Learning Schedule <span className="service-arrow">→</span>
-            </h2>
-            <p className="service-description">Create personalized learning paths for your coding journey.</p>
-          </Link>
-
-          <Link href="/CloudStorage" className="service-link">
-            <div className="service-icon">
-              <Database className="h-10 w-10" />
-            </div>
-            <h2 className="service-title">
-              Cloud Storage <span className="service-arrow">→</span>
-            </h2>
-            <p className="service-description">Store and manage your code and files securely in the cloud.</p>
-          </Link>
-
-          <Link href="/pricing" className="service-link">
-            <div className="service-icon">
-              <Sparkles className="h-10 w-10" />
-            </div>
-            <h2 className="service-title">
-              Pricing <span className="service-arrow">→</span>
-            </h2>
-            <p className="service-description">Explore our flexible pricing plans and premium features.</p>
-          </Link>
+          {routes.map((route) => (
+            <Link
+              key={route.href}
+              href={route.href}
+              className="service-link"
+              onClick={(e) => handleRouteClick(route, e)}
+            >
+              <div className="service-icon">
+                {route.icon}
+              </div>
+              <h2 className="service-title">
+                {route.label} <span className="service-arrow">→</span>
+              </h2>
+              <p className="service-description">
+                {route.requiresAuth && !isLoggedIn 
+                  ? "Sign in to access this feature"
+                  : route.requiresPremium && !isPremium
+                  ? "Upgrade to premium to access this feature"
+                  : getServiceDescription(route.href)}
+              </p>
+            </Link>
+          ))}
         </div>
 
         <footer className="business-footer">
@@ -272,5 +302,17 @@ export default function Home() {
       </main>
     </div>
   )
+}
+
+function getServiceDescription(path: string): string {
+  const descriptions: { [key: string]: string } = {
+    "/code-execution-and-error-analysis": "Run code and get detailed error analysis with AI assistance.",
+    "/code-collaboration": "Work together on code projects in real-time with team members.",
+    "/image-code-identifier": "Extract and analyze code from images with our AI tools.",
+    "/learning-schedule": "Create personalized learning paths for your coding journey.",
+    "/CloudStorage": "Store and manage your code and files securely in the cloud.",
+    "/pricing": "Explore our flexible pricing plans and premium features."
+  }
+  return descriptions[path] || ""
 }
 

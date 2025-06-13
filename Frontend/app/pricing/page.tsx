@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Check } from "lucide-react";
+import { Check, Gauge, PlayCircle, Image, Users, CalendarCheck } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -40,14 +40,14 @@ export default function PricingPage() {
   };
 
   const handleSubscribe = async (planId: string) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("Please login to subscribe");
+      router.push("/sign-in");
+      return;
+    }
     try {
       setProcessingPayment(true);
-      const token = localStorage.getItem("token");
-      if (!token) {
-        toast.error("Please login to subscribe");
-        return;
-      }
-
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/pricing/init-payment`, {
         method: "POST",
         headers: {
@@ -71,6 +71,34 @@ export default function PricingPage() {
       setProcessingPayment(false);
     }
   };
+
+  function getUsageLimits(planName: string) {
+    if (planName.toLowerCase().includes("monthly")) {
+      return [
+        { icon: <PlayCircle className="h-6 w-6 text-primary" />, text: "Code Execution: Up to 80 runs per month" },
+        { icon: <Image className="h-6 w-6 text-primary" />, text: "Image Code Identifier: Analyze up to 50 images per month" },
+        { icon: <Users className="h-6 w-6 text-primary" />, text: "Code Collaboration: Collaborate on up to 50 sessions per month" },
+        { icon: <CalendarCheck className="h-6 w-6 text-primary" />, text: "Custom Learning Schedule: Create up to 20 schedules per month" },
+      ];
+    }
+    if (planName.toLowerCase().includes("quarter")) {
+      return [
+        { icon: <PlayCircle className="h-6 w-6 text-primary" />, text: "Code Execution: Up to 350 runs per quarter" },
+        { icon: <Image className="h-6 w-6 text-primary" />, text: "Image Code Identifier: Analyze up to 220 images per quarter" },
+        { icon: <Users className="h-6 w-6 text-primary" />, text: "Code Collaboration: Collaborate on up to 220 sessions per quarter" },
+        { icon: <CalendarCheck className="h-6 w-6 text-primary" />, text: "Custom Learning Schedule: Create up to 100 schedules per quarter" },
+      ];
+    }
+    if (planName.toLowerCase().includes("year")) {
+      return [
+        { icon: <PlayCircle className="h-6 w-6 text-primary" />, text: "Code Execution: Up to 1,100 runs per year" },
+        { icon: <Image className="h-6 w-6 text-primary" />, text: "Image Code Identifier: Analyze up to 700 images per year" },
+        { icon: <Users className="h-6 w-6 text-primary" />, text: "Code Collaboration: Collaborate on up to 700 sessions per year" },
+        { icon: <CalendarCheck className="h-6 w-6 text-primary" />, text: "Custom Learning Schedule: Create up to 450 schedules per year" },
+      ];
+    }
+    return [];
+  }
 
   if (loading) {
     return (
@@ -111,22 +139,26 @@ export default function PricingPage() {
                 <span className="text-lg text-muted-foreground">/{plan.duration}</span>
               </div>
             </div>
-            <ul className="space-y-4 mb-8">
-              {plan.features.map((feature, index) => (
-                <li key={index} className="flex items-center gap-2">
-                  <Check className="h-5 w-5 text-primary" />
-                  <span>{feature}</span>
-                </li>
-              ))}
-            </ul>
+            <div className="mb-4">
+              <h4 className="font-semibold text-base mb-2 text-primary">Usage Limits</h4>
+              <ul className="space-y-2 bg-muted/40 rounded-md p-3 mb-4">
+                {getUsageLimits(plan.name).map((limit, idx) => (
+                  <li key={idx} className="flex items-center gap-3 text-lg font-semibold text-muted-foreground">
+                    {limit.icon}
+                    <span>{limit.text}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
             <Button
-              className="w-full"
+              style={{ fontSize: "1.15rem", paddingTop: "0.75rem", paddingBottom: "0.75rem" }}
+              className="w-full text-lg py-3"
               variant={selectedPlan === plan.id ? "default" : "outline"}
               onClick={() => {
                 setSelectedPlan(plan.id);
                 handleSubscribe(plan.id);
               }}
-              disabled={processingPayment}
+              disabled={processingPayment || !localStorage.getItem("token")}
             >
               {processingPayment ? "Processing..." : "Subscribe Now"}
             </Button>
