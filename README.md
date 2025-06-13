@@ -150,7 +150,7 @@ Code Buddy is a platform that enables users to:
 
 ### 💳 Premium Features:
 
-* 💰 AamarPay payment integration for subscription management.
+* 💰 SSL Commerz payment integration for subscription management.
 
 ---
 
