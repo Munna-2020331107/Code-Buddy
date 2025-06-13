@@ -70,17 +70,7 @@ export function Navbar() {
       <div className="header-container">
         <nav className="nav" aria-label="Main navigation">
           <div className="nav-container">
-            {routes.map((route) => (
-              <Link
-                key={route.href}
-                href={route.href}
-                className={`nav-link${pathname === route.href ? " nav-link-active" : ""}`}
-                onClick={(e) => handleRouteClick(route, e)}
-                aria-current={pathname === route.href ? "page" : undefined}
-              >
-                {route.label}
-              </Link>
-            ))}
+            <span style={{ fontSize: '1.5rem', color: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>⭐</span>
           </div>
         </nav>
         <div className="nav-divider" />

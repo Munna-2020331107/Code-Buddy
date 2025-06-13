@@ -34,7 +34,7 @@ export default function Home() {
 
   return (
     <div style={{ display: "flex" }}>
-      {/* Sidebar open button (hamburger icon) */}
+      {/* Sidebar floating button */}
       <button
         className="sidebar-toggle-btn"
         onClick={() => setSidebarOpen(true)}
@@ -49,15 +49,16 @@ export default function Home() {
           borderRadius: "50%",
           width: 40,
           height: 40,
-          fontSize: 24,
+          fontSize: 25,
           cursor: "pointer",
           display: sidebarOpen ? "none" : "flex",
           alignItems: "center",
-          justifyContent: "center"
+          justifyContent: "center",
+          boxShadow: "0 2px 8px rgba(66,133,244,0.15)"
         }}
         aria-label="Open sidebar"
       >
-        ☰
+        <span style={{ fontSize: 24, lineHeight: 1 }}>&#9776;</span>
       </button>
       {/* Sidebar and overlay */}
       {sidebarOpen && (
@@ -78,10 +79,11 @@ export default function Home() {
           />
         </>
       )}
-      <main className="main-container safe-area" style={{ marginLeft: sidebarOpen ? 220 : 0, transition: "margin-left 0.2s" }}>
-        <div className="page-decoration decoration-1"></div>
-        <div className="page-decoration decoration-2"></div>
+      
+      <div className="page-decoration decoration-1"></div>
+      <div className="page-decoration decoration-2"></div>
 
+      <main className="main-container safe-area">
         <div className="welcome-container">
           <h1 className="welcome-heading">Welcome to Code Buddy</h1>
           <p className="welcome-subheading">

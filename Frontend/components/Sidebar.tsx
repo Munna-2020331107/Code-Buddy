@@ -6,6 +6,22 @@ import { Moon, Sun } from "@/components/icons"
 import { useTheme } from "@/components/theme-provider"
 import { useEffect, useState } from "react"
 import "./Sidebar.css"
+import toast from "react-hot-toast"
+
+// User and Logout icons
+const UserIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" {...props}>
+    <circle cx="12" cy="7" r="4" />
+    <path d="M5.5 21a7.5 7.5 0 0 1 13 0" />
+  </svg>
+);
+const LogoutIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" {...props}>
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    <polyline points="16 17 21 12 16 7" />
+    <line x1="21" y1="12" x2="9" y2="12" />
+  </svg>
+);
 
 export function Sidebar({ onClose }: { onClose?: () => void }) {
   const { theme, setTheme } = useTheme()
@@ -33,6 +49,7 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
   const handleRouteClick = (route: any, e: React.MouseEvent) => {
     if (!isLoggedIn && route.requiresAuth) {
       e.preventDefault()
+      toast.error("Please sign in to access this feature")
       router.push("/sign-in")
       return
     }
@@ -64,9 +81,17 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
           ×
         </button>
       )}
-      <div className="sidebar-title">Code Buddy</div>
-      <div className="sidebar-divider" />
+      <div className="sidebar-title" style={{ marginBottom: '1.5rem' }}>Code Buddy</div>
+      <div className="sidebar-divider" style={{ marginBottom: '1.5rem' }} />
       <nav className="sidebar-nav">
+        <Link
+          href="/"
+          className={`sidebar-link${pathname === '/' ? ' active' : ''}`}
+          onClick={onClose}
+        >
+          <span className="sidebar-icon">🏠</span>
+          Home
+        </Link>
         {routes.map((route) => (
           <Link
             key={route.href}
@@ -80,31 +105,36 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
         ))}
       </nav>
       <div className="sidebar-bottom">
-        <button
-          aria-label="Toggle Theme"
-          className="sidebar-theme-btn"
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          type="button"
-        >
-          {theme === "dark" ? <Sun style={{ marginRight: 8 }} /> : <Moon style={{ marginRight: 8 }} />}
-          {theme === "dark" ? "Light" : "Dark"}
-        </button>
-        {isLoggedIn ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '2rem' }}>
+          {isLoggedIn ? (
+            <button
+              className="sidebar-sign-btn"
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1 }}
+              onClick={() => {
+                localStorage.removeItem("token")
+                setIsLoggedIn(false)
+                router.push("/sign-in")
+              }}
+            >
+              <LogoutIcon />
+              Sign Out
+            </button>
+          ) : (
+            <Link href="/sign-in" className="sidebar-sign-btn" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1 }}>
+              <UserIcon />
+              Sign In
+            </Link>
+          )}
           <button
-            className="sidebar-sign-btn"
-            onClick={() => {
-              localStorage.removeItem("token")
-              setIsLoggedIn(false)
-              router.push("/sign-in")
-            }}
+            aria-label="Toggle Theme"
+            className="sidebar-theme-btn"
+            style={{ marginLeft: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            type="button"
           >
-            Sign Out
+            {theme === "dark" ? <Sun /> : <Moon />}
           </button>
-        ) : (
-          <Link href="/sign-in" className="sidebar-sign-btn">
-            Sign In
-          </Link>
-        )}
+        </div>
       </div>
     </aside>
   )
