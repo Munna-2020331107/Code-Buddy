@@ -23,6 +23,7 @@ const formatDate = (dateString: string) => {
   });
 };
 
+
 interface CodeSnippet {
   _id: string;
   user: string;
