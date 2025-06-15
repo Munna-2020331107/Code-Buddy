@@ -2,12 +2,12 @@
 
 ## 🎯 Overview
 
-Code Buddy is a platform that enables users to:
-✅ Run single-file code and analyze outputs, including error detection and AI-generated solutions.
-✅ Store and manage code with descriptive metadata for easy search and retrieval.
-✅ Convertimage-based code to text for execution.
-✅ Generate AI-driven personalized learning schedules.
-✅ Collaborate in real-time with other developers.
+Code Buddy is a platform that enables users to:<br>
+✅ Run single-file code and analyze outputs, including error detection and AI-generated solutions. <br>
+✅ Store and manage code with descriptive metadata for easy search and retrieval.<br>
+✅ Convertimage-based code to text for execution.<br>
+✅ Generate AI-driven personalized learning schedules.<br>
+✅ Collaborate in real-time with other developers.<br>
 
 🔹 The software includes both free and premium features, with a comprehensive admin dashboard for management.
 
