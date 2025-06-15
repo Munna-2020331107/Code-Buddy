@@ -154,6 +154,23 @@ Code Buddy is a platform that enables users to:<br>
 
 ---
 
+### Pages
+
+![Diagram](images/HomePage.png)
+
+
+![Diagram](images/CodePlayground1.png)
+
+
+![Diagram](images/CodePlayground2.png)
+
+
+![Diagram](images/CodeCollaboration.png)
+
+![Diagram](images/CodeStorage.png)
+
+
+
 ## 💰 Business Model
 
 ### 🎟 Premium Features:
